@@ -1,119 +1,51 @@
 # VR Marketplace
 
-Teste técnico — micro frontends com Module Federation. Shell central + 3 remotes (Header, Footer, Cards) consumindo a API DummyJSON.
+Teste técnico — micro frontends com Module Federation consumindo a [DummyJSON](https://dummyjson.com). Shell + 3 remotes (Header, Footer, Cards).
 
 ## Rodando
 
 ```bash
 npm install
-npm start
+npm start            # sobe os 4 dev servers
 ```
 
-Sobe 4 dev servers via `concurrently`. App principal em **http://localhost:3000** (shell). Se a 3000 estiver ocupada, o shell faz fallback automático para a próxima porta livre (pulando 3001/3002/3003 — vai ver o log indicando a porta escolhida).
+App em `http://localhost:3000`. Cada remote também sobe standalone em 3001/3002/3003 pra desenvolvimento isolado. Se a 3000 estiver ocupada o shell pula pra próxima livre (e avisa no log).
 
-Cada remote também sobe standalone na sua porta para desenvolvimento isolado:
-
-| Porta | Aplicação                  |
-| ----: | -------------------------- |
-|  3000 | Shell (entrada do produto) |
-|  3001 | Header (standalone)        |
-|  3002 | Footer (standalone)        |
-|  3003 | Cards (standalone)         |
-
-## Scripts
-
-```
-npm start              dev (4 servidores em paralelo)
-npm run build          build de produção dos 5 packages
-npm test               jest --projects (todos os packages)
-npm run test:watch     jest em modo watch
-npm run test:coverage  jest com cobertura
-npm run lint           eslint nos packages
-npm run format         prettier --write
-npm run format:check   prettier --check
-npm run storybook      Storybook em http://localhost:6006
-npm run build-storybook  build estático em storybook-static/
-```
-
-### Storybook
-
-Cobre os componentes principais isoladamente. Cada story configura `useCartStore` e `useFiltersStore` via `parameters.cart` / `parameters.filters` (decorator em [.storybook/preview.tsx](.storybook/preview.tsx) faz `setState` antes do render). Fetch é stubado por padrão pra evitar requisições reais.
+Outros scripts úteis: `npm test`, `npm run lint`, `npm run storybook`. Build de produção: `npm run build` (ou `npm run vercel-build` que junta tudo em `out/`).
 
 ## Estrutura
 
 ```
 packages/
-├── shared/   biblioteca interna: store, API, tipos, ícones, utils
+├── shared/   store, API client, tipos, ícones, utils  (workspace npm, não publicado)
 ├── shell/    host: error boundary, query client, federation dos remotes
-├── header/   navbar (logo, busca, carrinho, modal), barra de categorias
+├── header/   navbar + busca + carrinho/modal + barra de categorias
 ├── footer/   rodapé institucional
-└── cards/    grid de produtos com infinite scroll e stepper de carrinho
+└── cards/    grid de produtos, scroll infinito, stepper, fly-to-cart
 ```
 
-`@vr/shared` é importado por npm workspaces.
+## Por que estas escolhas
 
-## Stack
+**Zustand** no lugar de Redux — o estado do carrinho é um slice só, compartilhado entre Header e Cards. Redux Toolkit dava pra usar, mas exigiria `Provider` no shell e boilerplate desproporcional. Zustand cobre o caso sem Provider e ainda permite o pin em `globalThis.__VR_CART_STORE__` ([cartStore.ts:72-76](packages/shared/src/store/cartStore.ts#L72-L76)) que blinda contra dupla-instanciação quando um remote roda standalone.
 
-React 18 + TypeScript (strict), Webpack 5 + `ModuleFederationPlugin`, Zustand (carrinho e filtros), TanStack Query + axios para HTTP, Tailwind v4 com tokens em `@theme`. Testes em Jest + Testing Library (`jest-environment-jsdom`).
+**TanStack Query** pra todo I/O — listagem com `useInfiniteQuery` (cache, refetch ao trocar filtro, cancelamento via `AbortSignal`), categorias com `staleTime: Infinity`, checkout via `useMutation`. Substituiu o `useState<LoadingState>` manual que daria pra fazer na unha.
 
-`react`, `zustand`, `axios` e `@tanstack/react-query` são marcados como singleton no MF — sem isso o store dupla-instancia entre shell e remotes. O store do carrinho também é fixado em `globalThis.__VR_CART_STORE__` ([cartStore.ts:72-76](packages/shared/src/store/cartStore.ts#L72-L76)) como cinto-e-suspensório pra esse mesmo problema.
+**Singletons no Module Federation** — `react`, `react-dom`, `zustand`, `axios` e `@tanstack/react-query` marcados como singleton em todos os MFEs. Sem isso o store dupla-instancia e o carrinho do header não enxerga o que o Cards adicionou.
 
-Persistência do carrinho via middleware `persist` do Zustand, com `partialize` deixando `isOpen` de fora — F5 não reabre o modal.
+**Tailwind v4** com tokens da marca em `@theme` ([theme.css](packages/shared/src/styles/theme.css)) — evita reescrever a paleta em cada componente.
 
-## Features
+## Testes
 
-- Listagem com **scroll infinito** (`IntersectionObserver` + fallback de botão para ambientes sem suporte).
-- **Busca debounced** no header (300ms), aplicada a `/products/search`.
-- **Filtro por categoria** com carrossel horizontal: setas no hover, fade gradient nas extremidades quando há overflow, traduções PT-BR das 24 categorias do DummyJSON.
-- **Stepper de carrinho** no card: estado vazio mostra "Adicionar"; com 1 item, lixeira no lugar do "-"; com 2+, controles de incremento/decremento; `+` desabilita ao atingir o stock.
-- **Animação fly-to-cart**: thumbnail clona, desenha arco até o botão do carrinho do header (`data-cart-target`), respeita `prefers-reduced-motion`.
-- **Modal de checkout** com confirmação detalhada (lista de produtos, subtotal, economia, total).
-- **Error boundaries** no shell (top-level + por remote) com sink de telemetria injetável (`setTelemetrySink`).
+Jest + Testing Library + `jest-environment-jsdom`, configurado via `jest --projects` (cada package roda os próprios). 67 testes cobrindo store, API client, hooks, componentes e o fluxo end-to-end do carrinho. Mocks via `jest.spyOn(http, "get")` em vez de `global.fetch`.
 
-## APIs
+Storybook cobre os componentes principais isolados. Stories setam o estado do store via `parameters.cart` / `parameters.filters` (decorator em [.storybook/preview.tsx](.storybook/preview.tsx)) e stubam o fetch por padrão.
 
-DummyJSON:
+## Deploy
 
-| Método | Endpoint                               | Uso                                   |
-| ------ | -------------------------------------- | ------------------------------------- |
-| GET    | `/products?limit&skip`                 | listagem padrão paginada              |
-| GET    | `/products/search?q&limit&skip`        | busca por texto                       |
-| GET    | `/products/category/{slug}?limit&skip` | filtro por categoria                  |
-| GET    | `/products/categories`                 | lista de categorias (slug, name, url) |
-| POST   | `/carts/add`                           | finalização do pedido                 |
+`vercel.json` + `vercel-build` montam os 4 `dist/` em um único `out/`. Em produção o shell resolve os remotes por path relativo (`header@/header/remoteEntry.js`); em dev por URL absoluta (`http://localhost:3001/...`). `publicPath: "auto"` faz o resto.
 
-Base URL via env: `API_BASE_URL` (fallback `https://dummyjson.com`).
-
-## Deploy (Vercel)
-
-O projeto tem um [vercel.json](vercel.json) e um script `vercel-build` que combinam os 4 `dist/` em um único output:
-
-```
-out/
-├── index.html        (shell)
-├── main.[hash].js
-├── favicon.ico
-├── header/remoteEntry.js
-├── footer/remoteEntry.js
-└── cards/remoteEntry.js
-```
-
-**Como o shell encontra os remotes em produção?** [packages/shell/webpack.config.js](packages/shell/webpack.config.js) usa URLs distintas dependendo do mode:
-
-- **Dev**: `header@http://localhost:3001/remoteEntry.js` (cada MFE no seu dev server)
-- **Prod**: `header@/header/remoteEntry.js` (path relativo no mesmo origin)
-
-Como `publicPath: "auto"` em todos os MFEs, os chunks de cada remote são resolvidos a partir do path do próprio `remoteEntry.js` — Webpack lida com isso sozinho.
-
-**Na Vercel:** os defaults do `vercel.json` já cuidam de tudo. Se o painel da Vercel estiver com algum override (Build Command, Output Directory, Framework Preset), **limpe os campos** para a config do arquivo prevalecer.
-
-Para testar o build local antes do deploy:
-
-```bash
-npm run vercel-build
-npx serve out -p 5000   # ou qualquer static server
-```
+Pra testar localmente: `npm run vercel-build && npx serve out`.
 
 ## Notas
 
-Sem autenticação: `POST /carts/add` usa `userId: 1` fixo (DummyJSON é mock).
+Sem autenticação — `POST /carts/add` usa `userId: 1` fixo (DummyJSON é mock). `isOpen` do carrinho fica fora do `persist` propositalmente: F5 não reabre o modal.

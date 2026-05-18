@@ -11,8 +11,8 @@ export function useInfiniteScroll<T extends Element = HTMLDivElement>({
   hasMore,
   isLoading,
   onLoadMore,
-  // 320px = ~1 viewport de scroll antes do sentinel aparecer, pra
-  // disparar o fetch antes do usuario chegar no fim da lista
+  // 320px ≈ um viewport extra: dispara o fetch antes do usuário
+  // chegar no fim da lista, evitando o "buraco" de loading visível
   rootMargin = "320px 0px",
 }: UseInfiniteScrollOptions) {
   const sentinelRef = useRef<T | null>(null);

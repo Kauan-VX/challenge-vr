@@ -21,6 +21,8 @@ const PROD_REMOTES = {
   cards: "cards@/cards/remoteEntry.js",
 };
 
+// 3001/3002/3003 são fixos dos remotes; se o shell cair em uma delas,
+// o dev server do remote falha e os imports federados quebram
 const RESERVED_PORTS = new Set([3001, 3002, 3003]);
 
 function findAvailablePort(start) {

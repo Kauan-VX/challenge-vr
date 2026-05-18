@@ -71,7 +71,7 @@ function createCartStore(): CartStore {
 
 // pin no globalThis evita duplicar o store se @vr/shared for resolvido
 // em mais de um bundle (shell + remotes). singleton no MF cobre 99% dos
-// casos, mas em standalone-dev os remotes resolvem por conta propria.
+// casos, mas em standalone-dev cada remote resolve por conta própria.
 export const useCartStore: CartStore =
   globalRef[GLOBAL_KEY] ?? (globalRef[GLOBAL_KEY] = createCartStore());
 

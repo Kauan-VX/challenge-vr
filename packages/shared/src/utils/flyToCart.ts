@@ -47,6 +47,9 @@ export function flyToCart({ imageUrl, source, duration = 750 }: FlyToCartOptions
   const endY = target.top + target.height / 2;
   const dx = endX - startX;
   const dy = endY - startY;
+  // altura do arco proporcional à distância vertical, com piso e teto
+  // pra que cards perto do header não façam um arco minúsculo e cards
+  // muito abaixo do fold não voem alto demais
   const arcLift = Math.max(120, Math.min(280, Math.abs(dy) * 0.5));
 
   const anim = el.animate(
