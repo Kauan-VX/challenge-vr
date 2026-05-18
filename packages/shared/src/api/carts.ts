@@ -1,4 +1,4 @@
-import { http, extractErrorMessage } from "./http";
+import { http } from "./http";
 import type { CartItem } from "../types/product";
 
 export interface CartCheckoutPayload {
@@ -31,13 +31,8 @@ export async function createCart(
 ): Promise<CartResponse> {
   const body = {
     userId: payload.userId,
-    products: payload.items.map((it) => ({ id: it.id, quantity: it.quantity })),
+    products: payload.items.map((item) => ({ id: item.id, quantity: item.quantity })),
   };
-
-  try {
-    const res = await http.post<CartResponse>("/carts/add", body, { signal });
-    return res.data;
-  } catch (err) {
-    throw new Error(extractErrorMessage(err, "Falha ao finalizar o pedido"));
-  }
+  const { data } = await http.post<CartResponse>("/carts/add", body, { signal });
+  return data;
 }

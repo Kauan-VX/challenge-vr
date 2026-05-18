@@ -1,4 +1,4 @@
-import { http, extractErrorMessage } from "./http";
+import { http } from "./http";
 import type { ProductsResponse } from "../types/product";
 
 export interface FetchProductsParams {
@@ -19,38 +19,33 @@ export async function fetchProducts(
   signal?: AbortSignal,
 ): Promise<ProductsResponse> {
   const { limit = 12, skip = 0, search, category } = params;
-  const hasSearch = !!search && search.trim().length > 0;
+  const term = search?.trim();
 
-  try {
-    if (hasSearch) {
-      const res = await http.get<ProductsResponse>("/products/search", {
-        params: { q: search, limit, skip },
-        signal,
-      });
-      return res.data;
-    }
-    if (category) {
-      const res = await http.get<ProductsResponse>(
-        `/products/category/${encodeURIComponent(category)}`,
-        { params: { limit, skip }, signal },
-      );
-      return res.data;
-    }
-    const res = await http.get<ProductsResponse>("/products", {
+  if (term) {
+    const { data } = await http.get<ProductsResponse>("/products/search", {
+      params: { q: term, limit, skip },
+      signal,
+    });
+    return data;
+  }
+
+  if (category) {
+    const path = `/products/category/${encodeURIComponent(category)}`;
+    const { data } = await http.get<ProductsResponse>(path, {
       params: { limit, skip },
       signal,
     });
-    return res.data;
-  } catch (err) {
-    throw new Error(extractErrorMessage(err, "Falha ao carregar produtos"));
+    return data;
   }
+
+  const { data } = await http.get<ProductsResponse>("/products", {
+    params: { limit, skip },
+    signal,
+  });
+  return data;
 }
 
 export async function fetchCategories(signal?: AbortSignal): Promise<Category[]> {
-  try {
-    const res = await http.get<Category[]>("/products/categories", { signal });
-    return res.data;
-  } catch (err) {
-    throw new Error(extractErrorMessage(err, "Falha ao carregar categorias"));
-  }
+  const { data } = await http.get<Category[]>("/products/categories", { signal });
+  return data;
 }
