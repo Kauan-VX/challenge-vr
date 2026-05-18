@@ -15,7 +15,7 @@ const App: React.FC = () => {
         </Suspense>
       </RemoteErrorBoundary>
 
-      <main className="flex-1 w-full" id="conteudo">
+      <main className="flex-1 w-full pt-8 md:pt-12" id="conteudo">
         <RemoteErrorBoundary name="Cards">
           <Suspense fallback={<RemoteFallback name="produtos" className="min-h-80" />}>
             <RemoteCards />

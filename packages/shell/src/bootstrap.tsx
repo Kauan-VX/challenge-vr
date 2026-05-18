@@ -1,8 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Provider } from "react-redux";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { store } from "./store";
 import { queryClient } from "./query/client";
 import App from "./App";
 import AppErrorBoundary from "./components/AppErrorBoundary";
@@ -17,9 +15,7 @@ createRoot(container).render(
   <React.StrictMode>
     <AppErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <Provider store={store}>
-          <App />
-        </Provider>
+        <App />
       </QueryClientProvider>
     </AppErrorBoundary>
   </React.StrictMode>,
