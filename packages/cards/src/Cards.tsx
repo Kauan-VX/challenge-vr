@@ -1,27 +1,27 @@
-import React, { useState, useCallback } from 'react';
-import ProductCard from './components/ProductCard';
-import Toolbar from './components/Toolbar';
-import { useProducts } from './hooks/useProducts';
-import { useDebounced } from './hooks/useDebounced';
-import './styles/main.css';
+import React, { useState, useCallback } from "react";
+import ProductCard from "./components/ProductCard";
+import Toolbar from "./components/Toolbar";
+import { useProducts } from "./hooks/useProducts";
+import { useDebounced } from "./hooks/useDebounced";
+import "./styles/main.css";
 
 const PAGE_SIZE = 12;
 
 const Cards: React.FC = () => {
-  const [searchInput, setSearchInput] = useState('');
+  const [searchInput, setSearchInput] = useState("");
   const search = useDebounced(searchInput, 350);
 
   const { items, total, status, error, loadMore, hasMore, isFetchingMore } = useProducts({
     search,
-    pageSize: PAGE_SIZE
+    pageSize: PAGE_SIZE,
   });
 
   const handleSearch = useCallback((value: string) => setSearchInput(value), []);
 
-  const isInitialLoading = status === 'loading' && items.length === 0;
+  const isInitialLoading = status === "loading" && items.length === 0;
 
   return (
-    <section className="mx-auto max-w-vr-content px-5" aria-busy={status === 'loading'}>
+    <section className="mx-auto max-w-vr-content px-5" aria-busy={status === "loading"}>
       <header className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-5 items-end mb-5">
         <div>
           <h2 className="m-0 mb-1 text-[22px] font-extrabold">Produtos</h2>
@@ -29,11 +29,7 @@ const Cards: React.FC = () => {
             Selecione e adicione ao carrinho. O Header reflete a sua selecao em tempo real.
           </p>
         </div>
-        <Toolbar
-          search={searchInput}
-          total={total}
-          onSearchChange={handleSearch}
-        />
+        <Toolbar search={searchInput} total={total} onSearchChange={handleSearch} />
       </header>
 
       {error && (
@@ -66,7 +62,7 @@ const Cards: React.FC = () => {
             </li>
           ))}
         </ul>
-      ) : items.length === 0 && status === 'success' ? (
+      ) : items.length === 0 && status === "success" ? (
         <p className="text-center text-vr-text-muted py-12 px-4" data-testid="cards-empty">
           Nenhum produto encontrado para os filtros aplicados.
         </p>
@@ -92,7 +88,7 @@ const Cards: React.FC = () => {
                 disabled={isFetchingMore}
                 data-testid="load-more"
               >
-                {isFetchingMore ? 'Carregando...' : 'Carregar mais'}
+                {isFetchingMore ? "Carregando..." : "Carregar mais"}
               </button>
             ) : items.length > 0 ? (
               <p className="text-vr-text-muted text-sm">Voce viu tudo por aqui.</p>

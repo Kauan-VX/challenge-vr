@@ -1,6 +1,6 @@
-import React, { memo, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addItem, formatPrice, Product } from '@vr/shared';
+import React, { memo, useState } from "react";
+import { useDispatch } from "react-redux";
+import { addItem, formatPrice, humanizeSlug, Product, StarIcon } from "@vr/shared";
 
 interface Props {
   product: Product;
@@ -44,7 +44,7 @@ const ProductCardImpl: React.FC<Props> = ({ product }) => {
 
       <div className="px-4 pt-3 pb-4 flex flex-col gap-2 flex-1">
         <p className="m-0 text-xs text-vr-text-muted uppercase tracking-wider">
-          {product.brand || product.category}
+          {product.brand || humanizeSlug(product.category)}
         </p>
         <h3
           className="m-0 text-base font-semibold leading-tight line-clamp-2 min-h-[2.6em]"
@@ -56,7 +56,7 @@ const ProductCardImpl: React.FC<Props> = ({ product }) => {
           className="inline-flex items-center gap-1 text-sm text-[#c47a00]"
           aria-label={`Avaliacao ${product.rating}`}
         >
-          <span aria-hidden="true">&#9733;</span>
+          <StarIcon size={14} />
           <span>{product.rating.toFixed(1)}</span>
         </div>
         <div className="mt-auto flex items-baseline gap-2 flex-wrap">
@@ -83,5 +83,5 @@ const ProductCardImpl: React.FC<Props> = ({ product }) => {
 };
 
 const ProductCard = memo(ProductCardImpl);
-ProductCard.displayName = 'ProductCard';
+ProductCard.displayName = "ProductCard";
 export default ProductCard;

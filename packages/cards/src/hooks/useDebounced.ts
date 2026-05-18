@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import { BehaviorSubject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { useEffect, useRef, useState } from "react";
+import { BehaviorSubject } from "rxjs";
+import { debounceTime, distinctUntilChanged } from "rxjs/operators";
 
 /**
  * Debounce reativo via RxJS.

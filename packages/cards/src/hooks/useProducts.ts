@@ -1,5 +1,5 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { fetchProducts, Product } from '@vr/shared';
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { fetchProducts, Product } from "@vr/shared";
 
 export interface UseProductsParams {
   search: string;
@@ -7,7 +7,7 @@ export interface UseProductsParams {
 }
 
 export interface UseProductsResult {
-  status: 'idle' | 'loading' | 'success' | 'error';
+  status: "idle" | "loading" | "success" | "error";
   items: Product[];
   total: number;
   error?: string;
@@ -18,24 +18,26 @@ export interface UseProductsResult {
 
 export function useProducts({ search, pageSize }: UseProductsParams): UseProductsResult {
   const query = useInfiniteQuery({
-    queryKey: ['products', { search, pageSize }],
+    queryKey: ["products", { search, pageSize }],
     initialPageParam: 0,
     queryFn: ({ pageParam, signal }) =>
       fetchProducts({ limit: pageSize, skip: pageParam, search }, signal),
     getNextPageParam: (lastPage, allPages) => {
       const loaded = allPages.reduce((sum, p) => sum + p.products.length, 0);
       return loaded < lastPage.total ? loaded : undefined;
-    }
+    },
   });
 
   const items = (query.data?.pages ?? []).flatMap((p) => p.products);
   const total = query.data?.pages[0]?.total ?? 0;
 
-  const status: UseProductsResult['status'] =
-    query.isPending ? 'loading'
-    : query.isError ? 'error'
-    : query.isSuccess ? 'success'
-    : 'idle';
+  const status: UseProductsResult["status"] = query.isPending
+    ? "loading"
+    : query.isError
+      ? "error"
+      : query.isSuccess
+        ? "success"
+        : "idle";
 
   return {
     status,
@@ -48,6 +50,6 @@ export function useProducts({ search, pageSize }: UseProductsParams): UseProduct
       }
     },
     hasMore: Boolean(query.hasNextPage),
-    isFetchingMore: query.isFetchingNextPage
+    isFetchingMore: query.isFetchingNextPage,
   };
 }
