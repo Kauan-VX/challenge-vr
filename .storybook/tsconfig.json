@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "include": ["./**/*", "../packages/*/src/**/*"],
+  "exclude": ["../node_modules", "../packages/*/dist"]
+}

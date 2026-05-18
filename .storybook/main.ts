@@ -16,11 +16,22 @@ const config: StorybookConfig = {
     config.module = config.module || { rules: [] };
     config.module.rules = config.module.rules || [];
 
-    // Storybook ja registra um loader pra CSS — substituimos pelo pipeline com PostCSS/Tailwind v4.
     config.module.rules = config.module.rules.filter((rule) => {
       if (!rule || typeof rule !== "object") return true;
       const test = (rule as { test?: RegExp }).test;
       return !(test instanceof RegExp && test.test("a.css"));
+    });
+
+    config.module.rules.push({
+      test: /\.tsx?$/,
+      exclude: /node_modules/,
+      use: {
+        loader: "ts-loader",
+        options: {
+          transpileOnly: true,
+          configFile: path.resolve(__dirname, "tsconfig.json"),
+        },
+      },
     });
 
     config.module.rules.push({
@@ -36,7 +47,7 @@ const config: StorybookConfig = {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
-      "@vr/shared": path.resolve(__dirname, "../packages/shared/src"),
+      "@vr/shared": path.resolve(__dirname, "../packages/shared"),
     };
 
     return config;
