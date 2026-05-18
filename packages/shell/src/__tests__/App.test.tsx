@@ -1,8 +1,6 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
-import { Provider } from "react-redux";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { store } from "../store";
 import App from "../App";
 
 describe("Shell <App />", () => {
@@ -10,9 +8,7 @@ describe("Shell <App />", () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
       <QueryClientProvider client={client}>
-        <Provider store={store}>
-          <App />
-        </Provider>
+        <App />
       </QueryClientProvider>,
     );
     await waitFor(() => expect(screen.getByTestId("remote-header")).toBeInTheDocument());

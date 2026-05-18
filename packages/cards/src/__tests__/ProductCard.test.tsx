@@ -1,9 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
-import { cartReducer, selectCartItems } from "@vr/shared";
+import { useCartStore } from "@vr/shared";
 import type { Product } from "@vr/shared";
 import ProductCard from "../components/ProductCard";
 
@@ -21,19 +19,18 @@ const baseProduct: Product = {
   images: [],
 };
 
-const renderWithStore = (product = baseProduct) => {
-  const store = configureStore({ reducer: { cart: cartReducer } });
-  const utils = render(
-    <Provider store={store}>
-      <ProductCard product={product} />
-    </Provider>,
-  );
-  return { store, ...utils, user: userEvent.setup() };
+const renderCard = (product = baseProduct) => {
+  const utils = render(<ProductCard product={product} />);
+  return { ...utils, user: userEvent.setup() };
 };
+
+beforeEach(() => {
+  useCartStore.setState({ items: [], isOpen: false });
+});
 
 describe("ProductCard", () => {
   it("mostra titulo, marca e preco com desconto aplicado", () => {
-    renderWithStore();
+    renderCard();
     expect(screen.getByText("Tenis Esportivo")).toBeInTheDocument();
     expect(screen.getByText("VR Sports")).toBeInTheDocument();
     const priceText = screen.getByText(/R\$\s?225,00/);
@@ -41,20 +38,59 @@ describe("ProductCard", () => {
   });
 
   it("mostra badge com porcentagem de desconto quando aplicavel", () => {
-    renderWithStore();
+    renderCard();
     expect(screen.getByLabelText("Desconto")).toHaveTextContent("-10%");
   });
 
   it("omite badge quando nao ha desconto", () => {
-    renderWithStore({ ...baseProduct, discountPercentage: 0 });
+    renderCard({ ...baseProduct, discountPercentage: 0 });
     expect(screen.queryByLabelText("Desconto")).not.toBeInTheDocument();
   });
 
-  it("despacha addItem ao clicar em adicionar", async () => {
-    const { user, store } = renderWithStore();
+  it("adiciona item ao carrinho ao clicar em adicionar", async () => {
+    const { user } = renderCard();
     await user.click(screen.getByTestId("add-42"));
-    const items = selectCartItems(store.getState());
+    const items = useCartStore.getState().items;
     expect(items).toHaveLength(1);
     expect(items[0]).toMatchObject({ id: 42, quantity: 1 });
+  });
+
+  it("ao ter 1 no carrinho mostra stepper com lixeira e contagem", async () => {
+    const { user } = renderCard();
+    await user.click(screen.getByTestId("add-42"));
+    expect(screen.getByTestId("stepper-42")).toBeInTheDocument();
+    expect(screen.getByTestId("stepper-count-42")).toHaveTextContent("1 no carrinho");
+    expect(screen.getByTestId("remove-42")).toBeInTheDocument();
+  });
+
+  it("lixeira remove o produto do carrinho quando quantidade eh 1", async () => {
+    const { user } = renderCard();
+    await user.click(screen.getByTestId("add-42"));
+    await user.click(screen.getByTestId("remove-42"));
+    expect(useCartStore.getState().items).toHaveLength(0);
+  });
+
+  it("ao ter 2 ou mais no carrinho mostra botao de menos no lugar da lixeira", async () => {
+    const { user } = renderCard();
+    await user.click(screen.getByTestId("add-42"));
+    await user.click(screen.getByTestId("add-42"));
+    expect(screen.getByTestId("stepper-count-42")).toHaveTextContent("2 no carrinho");
+    expect(screen.getByTestId("decrement-42")).toBeInTheDocument();
+    expect(screen.queryByTestId("remove-42")).not.toBeInTheDocument();
+  });
+
+  it("botao de menos reduz a quantidade", async () => {
+    const { user } = renderCard();
+    await user.click(screen.getByTestId("add-42"));
+    await user.click(screen.getByTestId("add-42"));
+    await user.click(screen.getByTestId("decrement-42"));
+    expect(screen.getByTestId("stepper-count-42")).toHaveTextContent("1 no carrinho");
+  });
+
+  it("desabilita o + quando atinge o estoque", async () => {
+    const { user } = renderCard({ ...baseProduct, stock: 2 });
+    await user.click(screen.getByTestId("add-42"));
+    await user.click(screen.getByTestId("add-42"));
+    expect(screen.getByTestId("add-42")).toBeDisabled();
   });
 });

@@ -1,9 +1,11 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { selectCartItems } from "@vr/shared";
+import { http, useCartStore, useFiltersStore } from "@vr/shared";
 import Cards from "../Cards";
-import { AppProviders, makeQueryClient, makeStore } from "./testUtils";
+import { AppProviders, makeQueryClient, resetCartStore, resetFiltersStore } from "./testUtils";
+
+const httpGet = jest.spyOn(http, "get");
 
 const productsPage = (start: number, count: number, total = 30) => ({
   products: Array.from({ length: count }, (_, i) => ({
@@ -25,31 +27,27 @@ const productsPage = (start: number, count: number, total = 30) => ({
 });
 
 beforeEach(() => {
-  (global as unknown as { fetch: jest.Mock }).fetch = jest
-    .fn()
-    .mockImplementation((url: string) => {
-      const skipMatch = /skip=(\d+)/.exec(url);
-      const skip = skipMatch ? Number(skipMatch[1]) : 0;
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(productsPage(skip + 1, 12, 24)),
-      });
-    });
+  resetCartStore();
+  resetFiltersStore();
+  httpGet.mockReset();
+  httpGet.mockImplementation((url: string, config?: { params?: { skip?: number } }) => {
+    const skip = config?.params?.skip ?? 0;
+    return Promise.resolve({ data: productsPage(skip + 1, 12, 24) }) as ReturnType<typeof http.get>;
+  });
 });
 
 afterEach(() => {
-  jest.resetAllMocks();
+  jest.clearAllMocks();
 });
 
 const renderCards = () => {
-  const store = makeStore();
   const client = makeQueryClient();
   const utils = render(
-    <AppProviders store={store} client={client}>
+    <AppProviders client={client}>
       <Cards />
     </AppProviders>,
   );
-  return { store, client, ...utils, user: userEvent.setup() };
+  return { client, ...utils, user: userEvent.setup() };
 };
 
 describe("Cards", () => {
@@ -59,11 +57,11 @@ describe("Cards", () => {
     expect(screen.getAllByTestId(/product-card-/)).toHaveLength(12);
   });
 
-  it("adicionar produto despacha acao no store", async () => {
-    const { user, store } = renderCards();
+  it("adicionar produto atualiza o carrinho", async () => {
+    const { user } = renderCards();
     await waitFor(() => expect(screen.getByTestId("cards-grid")).toBeInTheDocument());
     await user.click(screen.getByTestId("add-1"));
-    expect(selectCartItems(store.getState())).toHaveLength(1);
+    expect(useCartStore.getState().items).toHaveLength(1);
   });
 
   it('carrega proxima pagina ao clicar em "Carregar mais"', async () => {
@@ -74,22 +72,33 @@ describe("Cards", () => {
     await waitFor(() => expect(screen.getAllByTestId(/product-card-/).length).toBeGreaterThan(12));
   });
 
-  it("busca por termo dispara request com /products/search", async () => {
-    const { user } = renderCards();
+  it("filtro de busca dispara request com /products/search", async () => {
+    renderCards();
     await waitFor(() => expect(screen.getByTestId("cards-grid")).toBeInTheDocument());
-    await user.type(screen.getByLabelText(/Buscar produto/i), "tenis");
+    act(() => useFiltersStore.getState().setSearch("tenis"));
     await waitFor(() => {
-      const calls = (global.fetch as jest.Mock).mock.calls.map((c) => c[0] as string);
-      expect(calls.some((url) => url.includes("/products/search") && url.includes("q=tenis"))).toBe(
-        true,
-      );
+      const urls = httpGet.mock.calls.map((c) => c[0] as string);
+      const searchParams = httpGet.mock.calls
+        .map((c) => (c[1] as { params?: { q?: string } } | undefined)?.params?.q)
+        .filter(Boolean);
+      expect(urls.some((url) => url.includes("/products/search"))).toBe(true);
+      expect(searchParams).toContain("tenis");
+    });
+  });
+
+  it("filtro por categoria dispara request com /products/category/{slug}", async () => {
+    renderCards();
+    await waitFor(() => expect(screen.getByTestId("cards-grid")).toBeInTheDocument());
+    act(() => useFiltersStore.getState().setCategory("beauty"));
+    await waitFor(() => {
+      const urls = httpGet.mock.calls.map((c) => c[0] as string);
+      expect(urls.some((url) => url.includes("/products/category/beauty"))).toBe(true);
     });
   });
 
   it("mostra mensagem de erro quando a API falha", async () => {
-    (global as unknown as { fetch: jest.Mock }).fetch = jest
-      .fn()
-      .mockResolvedValue({ ok: false, status: 500 });
+    httpGet.mockReset();
+    httpGet.mockRejectedValue(new Error("Falha ao carregar produtos (500)"));
     renderCards();
     await waitFor(() => expect(screen.getByTestId("cards-error")).toBeInTheDocument());
   });

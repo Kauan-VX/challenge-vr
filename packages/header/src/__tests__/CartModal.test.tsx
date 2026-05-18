@@ -1,11 +1,10 @@
 import React from "react";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
-import { cartReducer, addItem, openCart, selectCartItems } from "@vr/shared";
+import { useCartStore, useFiltersStore } from "@vr/shared";
 import type { Product } from "@vr/shared";
 import Header from "../Header";
+import { AppProviders, httpGet, httpPost, stubCategories } from "./testUtils";
 
 const sample = (id: number, title: string, price = 10): Product => ({
   id,
@@ -21,18 +20,26 @@ const sample = (id: number, title: string, price = 10): Product => ({
   images: [],
 });
 
+beforeEach(() => {
+  useFiltersStore.setState({ search: "", category: null });
+  httpGet.mockReset();
+  httpPost.mockReset();
+  stubCategories();
+});
+
 const setup = () => {
-  const store = configureStore({ reducer: { cart: cartReducer } });
-  store.dispatch(addItem(sample(1, "Tenis", 199.9)));
-  store.dispatch(addItem(sample(1, "Tenis", 199.9)));
-  store.dispatch(addItem(sample(2, "Mochila", 89.5)));
-  store.dispatch(openCart());
+  useCartStore.setState({ items: [], isOpen: false });
+  const store = useCartStore.getState();
+  store.addItem(sample(1, "Tenis", 199.9));
+  store.addItem(sample(1, "Tenis", 199.9));
+  store.addItem(sample(2, "Mochila", 89.5));
+  store.openCart();
   const utils = render(
-    <Provider store={store}>
+    <AppProviders>
       <Header />
-    </Provider>,
+    </AppProviders>,
   );
-  return { store, ...utils, user: userEvent.setup() };
+  return { ...utils, user: userEvent.setup() };
 };
 
 describe("CartModal", () => {
@@ -77,50 +84,45 @@ describe("CartModal", () => {
   });
 
   it("finaliza o pedido chamando POST /carts/add e limpa o carrinho", async () => {
-    const fetchMock = jest.fn().mockResolvedValue({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          id: 51,
-          total: 489.3,
-          discountedTotal: 489.3,
-          userId: 1,
-          totalProducts: 2,
-          totalQuantity: 3,
-          products: [],
-        }),
-    });
-    (global as unknown as { fetch: jest.Mock }).fetch = fetchMock;
+    httpPost.mockResolvedValueOnce({
+      data: {
+        id: 51,
+        total: 489.3,
+        discountedTotal: 489.3,
+        userId: 1,
+        totalProducts: 2,
+        totalQuantity: 3,
+        products: [],
+      },
+    } as Awaited<ReturnType<typeof httpPost>>);
 
-    const { user, store } = setup();
+    const { user } = setup();
     await user.click(screen.getByTestId("cart-checkout"));
 
     await waitFor(() => expect(screen.getByTestId("cart-confirmation")).toBeInTheDocument());
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe("https://dummyjson.com/carts/add");
-    expect(init).toMatchObject({ method: "POST" });
-    const body = JSON.parse(init.body);
-    expect(body.userId).toBe(1);
-    expect(body.products).toEqual([
-      { id: 1, quantity: 2 },
-      { id: 2, quantity: 1 },
-    ]);
+    expect(httpPost).toHaveBeenCalledTimes(1);
+    const [url, body] = httpPost.mock.calls[0];
+    expect(url).toBe("/carts/add");
+    expect(body).toEqual({
+      userId: 1,
+      products: [
+        { id: 1, quantity: 2 },
+        { id: 2, quantity: 1 },
+      ],
+    });
 
     expect(screen.getByText("#51")).toBeInTheDocument();
-    expect(selectCartItems(store.getState())).toHaveLength(0);
+    expect(useCartStore.getState().items).toHaveLength(0);
   });
 
   it("exibe erro quando a API de carrinho falha", async () => {
-    (global as unknown as { fetch: jest.Mock }).fetch = jest
-      .fn()
-      .mockResolvedValue({ ok: false, status: 500 });
+    httpPost.mockRejectedValueOnce(new Error("Falha ao finalizar o pedido (500)"));
 
-    const { user, store } = setup();
+    const { user } = setup();
     await user.click(screen.getByTestId("cart-checkout"));
 
     await waitFor(() => expect(screen.getByTestId("cart-error")).toBeInTheDocument());
-    expect(selectCartItems(store.getState())).toHaveLength(2);
+    expect(useCartStore.getState().items).toHaveLength(2);
   });
 });

@@ -1,11 +1,10 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
-import { cartReducer, addItem } from "@vr/shared";
+import { useCartStore, useFiltersStore } from "@vr/shared";
 import type { Product } from "@vr/shared";
 import Header from "../Header";
+import { AppProviders, httpGet, httpPost, stubCategories } from "./testUtils";
 
 const sample = (id: number, title = `Produto ${id}`): Product => ({
   id,
@@ -21,20 +20,20 @@ const sample = (id: number, title = `Produto ${id}`): Product => ({
   images: [],
 });
 
-const makeStore = () => configureStore({ reducer: { cart: cartReducer } });
+beforeEach(() => {
+  useCartStore.setState({ items: [], isOpen: false });
+  useFiltersStore.setState({ search: "", category: null });
+  httpGet.mockReset();
+  httpPost.mockReset();
+  stubCategories();
+});
 
-const renderHeader = (seed?: (store: ReturnType<typeof makeStore>) => void) => {
-  const store = makeStore();
-  seed?.(store);
-  return {
-    store,
-    ...render(
-      <Provider store={store}>
-        <Header />
-      </Provider>,
-    ),
-  };
-};
+const renderHeader = () =>
+  render(
+    <AppProviders>
+      <Header />
+    </AppProviders>,
+  );
 
 describe("Header", () => {
   it("nao mostra badge quando o carrinho esta vazio", () => {
@@ -43,31 +42,28 @@ describe("Header", () => {
   });
 
   it("mostra badge com a contagem total de itens", () => {
-    const store = configureStore({ reducer: { cart: cartReducer } });
-    store.dispatch(addItem(sample(1)));
-    store.dispatch(addItem(sample(1)));
-    store.dispatch(addItem(sample(2)));
-    render(
-      <Provider store={store}>
-        <Header />
-      </Provider>,
-    );
+    const { addItem } = useCartStore.getState();
+    addItem(sample(1));
+    addItem(sample(1));
+    addItem(sample(2));
+    renderHeader();
     expect(screen.getByTestId("header-cart-badge")).toHaveTextContent("3");
   });
 
   it("abre o modal ao clicar no botao do carrinho", async () => {
     const user = userEvent.setup();
-    const store = configureStore({ reducer: { cart: cartReducer } });
-    store.dispatch(addItem(sample(1, "Camiseta")));
-    render(
-      <Provider store={store}>
-        <Header />
-      </Provider>,
-    );
+    const { addItem } = useCartStore.getState();
+    addItem(sample(1, "Camiseta"));
+    renderHeader();
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     await user.click(screen.getByTestId("header-cart-button"));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("Camiseta")).toBeInTheDocument();
+  });
+
+  it("inclui o input de busca na navbar", () => {
+    renderHeader();
+    expect(screen.getByTestId("header-search-input")).toBeInTheDocument();
   });
 });
