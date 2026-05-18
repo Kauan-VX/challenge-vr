@@ -18,4 +18,6 @@ export type { FetchProductsParams } from "./api/products";
 export { createCart } from "./api/carts";
 export type { CartCheckoutPayload, CartResponse } from "./api/carts";
 export { formatPrice, humanizeSlug } from "./utils/format";
+export { reportError, setTelemetrySink } from "./utils/telemetry";
+export type { TelemetryContext, TelemetrySink } from "./utils/telemetry";
 export * from "./icons";
