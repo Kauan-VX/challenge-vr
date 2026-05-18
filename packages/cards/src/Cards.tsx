@@ -1,35 +1,58 @@
-import React, { useState, useCallback } from "react";
+import React from "react";
 import ProductCard from "./components/ProductCard";
-import Toolbar from "./components/Toolbar";
 import { useProducts } from "./hooks/useProducts";
-import { useDebounced } from "./hooks/useDebounced";
+import { useInfiniteScroll } from "./hooks/useInfiniteScroll";
+import { useFiltersStore, selectSearch, selectCategory, translateCategory } from "@vr/shared";
 import "./styles/main.css";
 
 const PAGE_SIZE = 12;
 
 const Cards: React.FC = () => {
-  const [searchInput, setSearchInput] = useState("");
-  const search = useDebounced(searchInput, 350);
+  const search = useFiltersStore(selectSearch);
+  const category = useFiltersStore(selectCategory);
+  const clearFilters = useFiltersStore((s) => s.clearFilters);
 
   const { items, total, status, error, loadMore, hasMore, isFetchingMore } = useProducts({
     search,
+    category,
     pageSize: PAGE_SIZE,
   });
 
-  const handleSearch = useCallback((value: string) => setSearchInput(value), []);
+  const sentinelRef = useInfiniteScroll<HTMLDivElement>({
+    hasMore,
+    isLoading: isFetchingMore,
+    onLoadMore: loadMore,
+  });
 
   const isInitialLoading = status === "loading" && items.length === 0;
 
+  const headerTitle = category
+    ? translateCategory(category)
+    : search
+      ? `Resultados para "${search}"`
+      : "Produtos";
+
   return (
-    <section className="mx-auto max-w-vr-content px-5" aria-busy={status === "loading"}>
-      <header className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-5 items-end mb-5">
+    <section className="mx-auto max-w-vr-content px-5 pt-2 pb-12">
+      <header className="flex flex-wrap items-baseline justify-between gap-3 mb-6">
         <div>
-          <h2 className="m-0 mb-1 text-[22px] font-extrabold">Produtos</h2>
-          <p className="m-0 text-vr-text-muted text-base">
-            Selecione e adicione ao carrinho. O Header reflete a sua selecao em tempo real.
+          <h2 className="m-0 text-[26px] font-extrabold tracking-tight" data-testid="cards-title">
+            {headerTitle}
+          </h2>
+          <p className="m-0 mt-1 text-vr-text-muted text-sm" aria-live="polite">
+            {total > 0 ? `${total} produto${total === 1 ? "" : "s"}` : "Sem resultados"}
           </p>
         </div>
-        <Toolbar search={searchInput} total={total} onSearchChange={handleSearch} />
+        {(category || search) && (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="text-sm text-vr-primary font-semibold hover:underline"
+            data-testid="clear-filters"
+          >
+            Limpar filtros
+          </button>
+        )}
       </header>
 
       {error && (
@@ -79,19 +102,30 @@ const Cards: React.FC = () => {
             ))}
           </ul>
 
-          <div className="text-center mt-5">
-            {hasMore ? (
+          <div
+            ref={sentinelRef}
+            className="h-12 mt-6 flex items-center justify-center text-sm text-vr-text-muted"
+            data-testid="infinite-scroll-sentinel"
+          >
+            {isFetchingMore ? (
+              <span className="inline-flex items-center gap-2" data-testid="loading-more">
+                <span
+                  className="inline-block w-3.5 h-3.5 rounded-full border-2 border-vr-border border-t-vr-primary animate-spin"
+                  aria-hidden="true"
+                />
+                Carregando mais produtos...
+              </span>
+            ) : hasMore ? (
               <button
                 type="button"
-                className="bg-vr-surface border border-vr-border rounded-[10px] px-5 py-3 font-semibold text-vr-text hover:enabled:border-vr-primary hover:enabled:text-vr-primary disabled:opacity-60 disabled:cursor-progress"
+                className="text-vr-primary font-semibold hover:underline focus-visible:underline focus-visible:outline-none"
                 onClick={loadMore}
-                disabled={isFetchingMore}
                 data-testid="load-more"
               >
-                {isFetchingMore ? "Carregando..." : "Carregar mais"}
+                Carregar mais
               </button>
             ) : items.length > 0 ? (
-              <p className="text-vr-text-muted text-sm">Voce viu tudo por aqui.</p>
+              <span>Voce viu tudo por aqui.</span>
             ) : null}
           </div>
         </>

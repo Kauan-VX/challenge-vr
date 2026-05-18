@@ -49,8 +49,8 @@ module.exports = (_env, argv) => {
         shared: {
           react: { singleton: true, requiredVersion: deps.react },
           "react-dom": { singleton: true, requiredVersion: deps["react-dom"] },
-          "react-redux": { singleton: true, requiredVersion: deps["react-redux"] },
-          "@reduxjs/toolkit": { singleton: true, requiredVersion: deps["@reduxjs/toolkit"] },
+          zustand: { singleton: true, requiredVersion: deps.zustand },
+          axios: { singleton: true, requiredVersion: deps.axios },
           "@tanstack/react-query": {
             singleton: true,
             requiredVersion: deps["@tanstack/react-query"],

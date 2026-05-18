@@ -3,6 +3,7 @@ import { fetchProducts, Product } from "@vr/shared";
 
 export interface UseProductsParams {
   search: string;
+  category: string | null;
   pageSize: number;
 }
 
@@ -16,12 +17,12 @@ export interface UseProductsResult {
   isFetchingMore: boolean;
 }
 
-export function useProducts({ search, pageSize }: UseProductsParams): UseProductsResult {
+export function useProducts({ search, category, pageSize }: UseProductsParams): UseProductsResult {
   const query = useInfiniteQuery({
-    queryKey: ["products", { search, pageSize }],
+    queryKey: ["products", { search, category, pageSize }],
     initialPageParam: 0,
     queryFn: ({ pageParam, signal }) =>
-      fetchProducts({ limit: pageSize, skip: pageParam, search }, signal),
+      fetchProducts({ limit: pageSize, skip: pageParam, search, category }, signal),
     getNextPageParam: (lastPage, allPages) => {
       const loaded = allPages.reduce((sum, p) => sum + p.products.length, 0);
       return loaded < lastPage.total ? loaded : undefined;
