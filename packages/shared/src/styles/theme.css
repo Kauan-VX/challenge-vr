@@ -76,3 +76,22 @@
     background-position: -200% 0;
   }
 }
+
+@keyframes vrBump {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.18);
+  }
+  70% {
+    transform: scale(0.94);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.vr-cart-bump {
+  animation: vrBump 320ms cubic-bezier(0.4, 0.2, 0.2, 1);
+}
