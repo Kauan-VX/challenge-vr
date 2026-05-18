@@ -1,10 +1,10 @@
-import React, { lazy, Suspense } from 'react';
-import RemoteFallback from './components/RemoteFallback';
-import RemoteErrorBoundary from './components/RemoteErrorBoundary';
+import React, { lazy, Suspense } from "react";
+import RemoteFallback from "./components/RemoteFallback";
+import RemoteErrorBoundary from "./components/RemoteErrorBoundary";
 
-const RemoteHeader = lazy(() => import('header/Header'));
-const RemoteFooter = lazy(() => import('footer/Footer'));
-const RemoteCards = lazy(() => import('cards/Cards'));
+const RemoteHeader = lazy(() => import("header/Header"));
+const RemoteFooter = lazy(() => import("footer/Footer"));
+const RemoteCards = lazy(() => import("cards/Cards"));
 
 const App: React.FC = () => {
   return (

@@ -5,11 +5,5 @@
     "rootDir": ".."
   },
   "include": ["src/**/*", "src/types/remotes.d.ts", "../shared/src/**/*"],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/__tests__/**"
-  ]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"]
 }

@@ -1,11 +1,11 @@
-import React from 'react';
+import React from "react";
 
 interface Props {
   name: string;
   className?: string;
 }
 
-const RemoteFallback: React.FC<Props> = ({ name, className = 'min-h-30' }) => (
+const RemoteFallback: React.FC<Props> = ({ name, className = "min-h-30" }) => (
   <div
     role="status"
     aria-live="polite"

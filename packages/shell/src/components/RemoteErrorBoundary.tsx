@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface Props {
   name: string;
@@ -18,7 +18,7 @@ class RemoteErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
       // log local apenas em dev
       // eslint-disable-next-line no-console
       console.error(`[shell] falha ao carregar remote "${this.props.name}"`, error, info);
