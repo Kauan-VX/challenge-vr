@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
-import type { CartItem, Product } from '../types/product';
+import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
+import type { CartItem, Product } from "../types/product";
 
 export interface CartState {
   items: CartItem[];
@@ -8,11 +8,11 @@ export interface CartState {
 
 const initialState: CartState = {
   items: [],
-  isOpen: false
+  isOpen: false,
 };
 
 const cartSlice = createSlice({
-  name: 'cart',
+  name: "cart",
   initialState,
   reducers: {
     addItem: (state, action: PayloadAction<Product>) => {
@@ -27,7 +27,7 @@ const cartSlice = createSlice({
         title: product.title,
         price: product.price,
         thumbnail: product.thumbnail,
-        quantity: 1
+        quantity: 1,
       });
     },
     removeItem: (state, action: PayloadAction<number>) => {
@@ -51,21 +51,11 @@ const cartSlice = createSlice({
     closeCart: (state) => {
       state.isOpen = false;
     },
-    toggleCart: (state) => {
-      state.isOpen = !state.isOpen;
-    }
-  }
+  },
 });
 
-export const {
-  addItem,
-  removeItem,
-  decrementItem,
-  clearCart,
-  openCart,
-  closeCart,
-  toggleCart
-} = cartSlice.actions;
+export const { addItem, removeItem, decrementItem, clearCart, openCart, closeCart } =
+  cartSlice.actions;
 
 export const cartReducer = cartSlice.reducer;
 
@@ -77,9 +67,9 @@ export const selectCartItems = (state: RootStateLike) => state.cart.items;
 export const selectCartIsOpen = (state: RootStateLike) => state.cart.isOpen;
 
 export const selectCartCount = createSelector(selectCartItems, (items) =>
-  items.reduce((acc, it) => acc + it.quantity, 0)
+  items.reduce((acc, it) => acc + it.quantity, 0),
 );
 
 export const selectCartTotal = createSelector(selectCartItems, (items) =>
-  items.reduce((acc, it) => acc + it.price * it.quantity, 0)
+  items.reduce((acc, it) => acc + it.price * it.quantity, 0),
 );
