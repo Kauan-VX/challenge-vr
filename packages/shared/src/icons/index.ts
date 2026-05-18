@@ -5,3 +5,7 @@ export { PlusIcon } from "./PlusIcon";
 export { MinusIcon } from "./MinusIcon";
 export { SearchIcon } from "./SearchIcon";
 export { TrashIcon } from "./TrashIcon";
+export { TruckIcon } from "./TruckIcon";
+export { ShieldIcon } from "./ShieldIcon";
+export { ReturnIcon } from "./ReturnIcon";
+export { PackageIcon } from "./PackageIcon";
