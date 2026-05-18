@@ -1,24 +1,24 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
-import { cartReducer, addItem } from '@vr/shared';
-import type { Product } from '@vr/shared';
-import Header from '../Header';
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
+import { cartReducer, addItem } from "@vr/shared";
+import type { Product } from "@vr/shared";
+import Header from "../Header";
 
 const sample = (id: number, title = `Produto ${id}`): Product => ({
   id,
   title,
-  description: '',
+  description: "",
   price: 19.9,
   discountPercentage: 0,
   rating: 0,
   stock: 10,
-  brand: '',
-  category: '',
-  thumbnail: '',
-  images: []
+  brand: "",
+  category: "",
+  thumbnail: "",
+  images: [],
 });
 
 const makeStore = () => configureStore({ reducer: { cart: cartReducer } });
@@ -31,18 +31,18 @@ const renderHeader = (seed?: (store: ReturnType<typeof makeStore>) => void) => {
     ...render(
       <Provider store={store}>
         <Header />
-      </Provider>
-    )
+      </Provider>,
+    ),
   };
 };
 
-describe('Header', () => {
-  it('nao mostra badge quando o carrinho esta vazio', () => {
+describe("Header", () => {
+  it("nao mostra badge quando o carrinho esta vazio", () => {
     renderHeader();
-    expect(screen.queryByTestId('header-cart-badge')).not.toBeInTheDocument();
+    expect(screen.queryByTestId("header-cart-badge")).not.toBeInTheDocument();
   });
 
-  it('mostra badge com a contagem total de itens', () => {
+  it("mostra badge com a contagem total de itens", () => {
     const store = configureStore({ reducer: { cart: cartReducer } });
     store.dispatch(addItem(sample(1)));
     store.dispatch(addItem(sample(1)));
@@ -50,24 +50,24 @@ describe('Header', () => {
     render(
       <Provider store={store}>
         <Header />
-      </Provider>
+      </Provider>,
     );
-    expect(screen.getByTestId('header-cart-badge')).toHaveTextContent('3');
+    expect(screen.getByTestId("header-cart-badge")).toHaveTextContent("3");
   });
 
-  it('abre o modal ao clicar no botao do carrinho', async () => {
+  it("abre o modal ao clicar no botao do carrinho", async () => {
     const user = userEvent.setup();
     const store = configureStore({ reducer: { cart: cartReducer } });
-    store.dispatch(addItem(sample(1, 'Camiseta')));
+    store.dispatch(addItem(sample(1, "Camiseta")));
     render(
       <Provider store={store}>
         <Header />
-      </Provider>
+      </Provider>,
     );
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    await user.click(screen.getByTestId('header-cart-button'));
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText('Camiseta')).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await user.click(screen.getByTestId("header-cart-button"));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText("Camiseta")).toBeInTheDocument();
   });
 });

@@ -1,9 +1,9 @@
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectCartCount, openCart, selectCartIsOpen } from '@vr/shared';
-import logo from '@vr/shared/src/assets/logo.png';
-import CartModal from './components/CartModal';
-import './styles/main.css';
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { selectCartCount, openCart, selectCartIsOpen, CartIcon } from "@vr/shared";
+import logo from "@vr/shared/src/assets/logo.png";
+import CartModal from "./components/CartModal";
+import "./styles/main.css";
 
 const Header: React.FC = () => {
   const dispatch = useDispatch();
@@ -21,7 +21,13 @@ const Header: React.FC = () => {
           href="#"
           aria-label="VR Beneficios"
         >
-          <img src={logo} alt="VR" className="block w-10 h-10 rounded-[10px] object-contain" width={40} height={40} />
+          <img
+            src={logo}
+            alt="VR"
+            className="block w-10 h-10 rounded-[10px] object-contain"
+            width={40}
+            height={40}
+          />
           <span className="hidden md:inline">Marketplace</span>
         </a>
 
@@ -50,24 +56,10 @@ const Header: React.FC = () => {
           type="button"
           className="ml-auto relative inline-flex items-center gap-2 px-4 py-2 rounded-[10px] bg-vr-primary-soft text-vr-primary font-semibold transition-colors hover:bg-vr-primary hover:text-white focus-visible:outline-3 focus-visible:outline-vr-primary/35 focus-visible:outline-offset-2"
           onClick={() => dispatch(openCart())}
-          aria-label={`Abrir carrinho (${cartCount} item${cartCount === 1 ? '' : 's'})`}
+          aria-label={`Abrir carrinho (${cartCount} item${cartCount === 1 ? "" : "s"})`}
           data-testid="header-cart-button"
         >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="9" cy="20" r="1.5" />
-            <circle cx="18" cy="20" r="1.5" />
-            <path d="M2 3h3l2.4 12.3a2 2 0 0 0 2 1.7h8.7a2 2 0 0 0 2-1.6L22 7H6" />
-          </svg>
+          <CartIcon size={22} />
           <span className="hidden md:inline">Carrinho</span>
           {cartCount > 0 && (
             <span

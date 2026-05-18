@@ -11,6 +11,9 @@ import {
   clearCart,
   createCart,
   formatPrice,
+  CloseIcon,
+  PlusIcon,
+  MinusIcon,
 } from "@vr/shared";
 import type { CartItem, CartResponse } from "@vr/shared";
 
@@ -81,8 +84,7 @@ const CartModal: React.FC = () => {
       setCheckout({ status: "success", cart });
       dispatch(clearCart());
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Erro inesperado ao finalizar";
+      const message = err instanceof Error ? err.message : "Erro inesperado ao finalizar";
       setCheckout({ status: "error", message });
     }
   };
@@ -107,11 +109,11 @@ const CartModal: React.FC = () => {
           </h2>
           <button
             type="button"
-            className="border-0 bg-transparent text-[22px] leading-none w-8 h-8 rounded-full text-vr-text-muted hover:bg-vr-surface-alt hover:text-vr-text"
+            className="border-0 bg-transparent inline-grid place-items-center w-8 h-8 rounded-full text-vr-text-muted hover:bg-vr-surface-alt hover:text-vr-text"
             onClick={handleClose}
             aria-label="Fechar carrinho"
           >
-            x
+            <CloseIcon size={18} />
           </button>
         </header>
 
@@ -120,16 +122,13 @@ const CartModal: React.FC = () => {
             className="px-5 py-12 text-center flex flex-col gap-2"
             data-testid="cart-confirmation"
           >
-            <p className="m-0 text-lg font-bold text-vr-success">
-              Pedido confirmado!
-            </p>
+            <p className="m-0 text-lg font-bold text-vr-success">Pedido confirmado!</p>
             <p className="m-0 text-vr-text-muted text-sm">
               Numero do pedido: <strong>#{checkout.cart.id}</strong>
             </p>
             <p className="m-0 text-vr-text-muted text-sm">
               {checkout.cart.totalProducts} produto
-              {checkout.cart.totalProducts === 1 ? "" : "s"} (
-              {checkout.cart.totalQuantity} unidade
+              {checkout.cart.totalProducts === 1 ? "" : "s"} ({checkout.cart.totalQuantity} unidade
               {checkout.cart.totalQuantity === 1 ? "" : "s"})
             </p>
             <p className="my-3 text-[22px] font-extrabold">
@@ -147,21 +146,13 @@ const CartModal: React.FC = () => {
             </button>
           </div>
         ) : items.length === 0 ? (
-          <div
-            className="px-5 py-12 text-center text-vr-text-muted"
-            data-testid="cart-empty"
-          >
+          <div className="px-5 py-12 text-center text-vr-text-muted" data-testid="cart-empty">
             <p>Seu carrinho esta vazio.</p>
-            <p className="text-sm mt-2">
-              Adicione produtos a partir da listagem.
-            </p>
+            <p className="text-sm mt-2">Adicione produtos a partir da listagem.</p>
           </div>
         ) : (
           <>
-            <ul
-              className="list-none m-0 px-4 py-3 overflow-y-auto flex-1"
-              data-testid="cart-list"
-            >
+            <ul className="list-none m-0 px-4 py-3 overflow-y-auto flex-1" data-testid="cart-list">
               {items.map((item) => (
                 <li
                   key={item.id}
@@ -177,12 +168,8 @@ const CartModal: React.FC = () => {
                     }}
                   />
                   <div className="flex flex-col gap-1 min-w-0">
-                    <p className="m-0 text-sm md:text-base font-semibold truncate">
-                      {item.title}
-                    </p>
-                    <p className="m-0 text-sm text-vr-text-muted">
-                      {formatPrice(item.price)}
-                    </p>
+                    <p className="m-0 text-sm md:text-base font-semibold truncate">{item.title}</p>
+                    <p className="m-0 text-sm text-vr-text-muted">{formatPrice(item.price)}</p>
                     <div
                       className="inline-flex items-center gap-2 mt-1"
                       role="group"
@@ -190,11 +177,11 @@ const CartModal: React.FC = () => {
                     >
                       <button
                         type="button"
-                        className="w-[26px] h-[26px] rounded-md border border-vr-border bg-vr-surface font-bold text-vr-text hover:bg-vr-surface-alt"
+                        className="w-[26px] h-[26px] rounded-md border border-vr-border bg-vr-surface text-vr-text inline-grid place-items-center hover:bg-vr-surface-alt"
                         onClick={() => dispatch(decrementItem(item.id))}
                         aria-label={`Diminuir quantidade de ${item.title}`}
                       >
-                        -
+                        <MinusIcon size={14} />
                       </button>
                       <span
                         className="min-w-[18px] text-center tabular-nums"
@@ -204,11 +191,11 @@ const CartModal: React.FC = () => {
                       </span>
                       <button
                         type="button"
-                        className="w-[26px] h-[26px] rounded-md border border-vr-border bg-vr-surface font-bold text-vr-text hover:bg-vr-surface-alt"
+                        className="w-[26px] h-[26px] rounded-md border border-vr-border bg-vr-surface text-vr-text inline-grid place-items-center hover:bg-vr-surface-alt"
                         onClick={() => handleIncrement(item)}
                         aria-label={`Aumentar quantidade de ${item.title}`}
                       >
-                        +
+                        <PlusIcon size={14} />
                       </button>
                     </div>
                   </div>
@@ -249,10 +236,7 @@ const CartModal: React.FC = () => {
               </button>
               <div className="flex items-baseline justify-between">
                 <span className="text-vr-text-muted">Total</span>
-                <span
-                  className="text-[22px] font-extrabold tabular-nums"
-                  data-testid="cart-total"
-                >
+                <span className="text-[22px] font-extrabold tabular-nums" data-testid="cart-total">
                   {formatPrice(total)}
                 </span>
               </div>
@@ -263,9 +247,7 @@ const CartModal: React.FC = () => {
                 disabled={checkout.status === "submitting"}
                 data-testid="cart-checkout"
               >
-                {checkout.status === "submitting"
-                  ? "Finalizando..."
-                  : "Finalizar pedido"}
+                {checkout.status === "submitting" ? "Finalizando..." : "Finalizar pedido"}
               </button>
             </footer>
           </>
