@@ -1,0 +1,19 @@
+{
+  "name": "@vr/cards",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "webpack serve --config webpack.config.js --mode development",
+    "build": "webpack --config webpack.config.js --mode production",
+    "test": "jest --config jest.config.js"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.2.1",
+    "@tanstack/react-query": "^5.28.4",
+    "@vr/shared": "*",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-redux": "^9.1.0",
+    "rxjs": "^7.8.1"
+  }
+}
