@@ -1,16 +1,16 @@
-import type { StorybookConfig } from '@storybook/react-webpack5';
-import path from 'path';
+import type { StorybookConfig } from "@storybook/react-webpack5";
+import path from "path";
 
 const config: StorybookConfig = {
-  stories: ['../packages/*/src/**/*.stories.@(ts|tsx)'],
-  addons: ['@storybook/addon-essentials', '@storybook/addon-a11y'],
+  stories: ["../packages/*/src/**/*.stories.@(ts|tsx)"],
+  addons: ["@storybook/addon-essentials", "@storybook/addon-a11y"],
   framework: {
-    name: '@storybook/react-webpack5',
-    options: {}
+    name: "@storybook/react-webpack5",
+    options: {},
   },
   typescript: {
     check: false,
-    reactDocgen: 'react-docgen-typescript'
+    reactDocgen: "react-docgen-typescript",
   },
   webpackFinal: async (config) => {
     config.module = config.module || { rules: [] };
@@ -18,29 +18,29 @@ const config: StorybookConfig = {
 
     // Storybook ja registra um loader pra CSS — substituimos pelo pipeline com PostCSS/Tailwind v4.
     config.module.rules = config.module.rules.filter((rule) => {
-      if (!rule || typeof rule !== 'object') return true;
+      if (!rule || typeof rule !== "object") return true;
       const test = (rule as { test?: RegExp }).test;
-      return !(test instanceof RegExp && test.test('a.css'));
+      return !(test instanceof RegExp && test.test("a.css"));
     });
 
     config.module.rules.push({
       test: /\.css$/,
-      use: ['style-loader', 'css-loader', 'postcss-loader']
+      use: ["style-loader", "css-loader", "postcss-loader"],
     });
 
     config.module.rules.push({
       test: /\.(png|jpe?g|gif|svg|webp)$/i,
-      type: 'asset/resource'
+      type: "asset/resource",
     });
 
     config.resolve = config.resolve || {};
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
-      '@vr/shared': path.resolve(__dirname, '../packages/shared/src')
+      "@vr/shared": path.resolve(__dirname, "../packages/shared/src"),
     };
 
     return config;
-  }
+  },
 };
 
 export default config;
