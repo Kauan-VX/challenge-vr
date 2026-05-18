@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "../config";
+import { http, extractErrorMessage } from "./http";
 import type { CartItem } from "../types/product";
 
 export interface CartCheckoutPayload {
@@ -34,16 +34,10 @@ export async function createCart(
     products: payload.items.map((it) => ({ id: it.id, quantity: it.quantity })),
   };
 
-  const res = await fetch(`${API_BASE_URL}/carts/add`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    signal,
-  });
-
-  if (!res.ok) {
-    throw new Error(`Falha ao finalizar o pedido (${res.status})`);
+  try {
+    const res = await http.post<CartResponse>("/carts/add", body, { signal });
+    return res.data;
+  } catch (err) {
+    throw new Error(extractErrorMessage(err, "Falha ao finalizar o pedido"));
   }
-
-  return res.json() as Promise<CartResponse>;
 }
