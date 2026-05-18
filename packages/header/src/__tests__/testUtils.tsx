@@ -21,12 +21,11 @@ export const httpGet = jest.spyOn(http, "get");
 export const httpPost = jest.spyOn(http, "post");
 
 export function stubCategories(slugs: Array<{ slug: string; name: string }> = []) {
-  httpGet.mockImplementation((url: string) => {
-    if (url.includes("/products/categories")) {
-      return Promise.resolve({
-        data: slugs.map((s) => ({ ...s, url: "" })),
-      }) as ReturnType<typeof http.get>;
+  const categories = slugs.map((s) => ({ ...s, url: "" }));
+  httpGet.mockImplementation(async (url) => {
+    if (typeof url === "string" && url.includes("/products/categories")) {
+      return { data: categories } as never;
     }
-    return Promise.resolve({ data: [] }) as ReturnType<typeof http.get>;
+    return { data: [] } as never;
   });
 }

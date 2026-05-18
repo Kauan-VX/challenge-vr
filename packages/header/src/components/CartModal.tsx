@@ -1,54 +1,37 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
-  useCartStore,
-  useCheckout,
+  CloseIcon,
+  MinusIcon,
+  PRODUCT_ROW_FALLBACK,
+  PlusIcon,
+  formatPrice,
   selectCartItems,
   selectCartTotal,
-  formatPrice,
-  CloseIcon,
-  PlusIcon,
-  MinusIcon,
+  useCartStore,
+  useCheckout,
+  useModalControls,
 } from "@vr/shared";
 import type { CartItem } from "@vr/shared";
-
-const FALLBACK_IMG =
-  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="100%" height="100%" fill="%23eef0f5"/></svg>';
 
 const DEMO_USER_ID = 1;
 
 const CartModal: React.FC = () => {
   const items = useCartStore(selectCartItems);
   const total = useCartStore(selectCartTotal);
-  const closeCart = useCartStore((s) => s.closeCart);
-  const removeItem = useCartStore((s) => s.removeItem);
-  const decrementItem = useCartStore((s) => s.decrementItem);
-  const addItem = useCartStore((s) => s.addItem);
-  const clearCart = useCartStore((s) => s.clearCart);
+  const closeCart = useCartStore((state) => state.closeCart);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const decrementItem = useCartStore((state) => state.decrementItem);
+  const addItem = useCartStore((state) => state.addItem);
+  const clearCart = useCartStore((state) => state.clearCart);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const checkout = useCheckout();
 
-  const handleClose = useCallback(() => {
-    closeCart();
-  }, [closeCart]);
+  const handleClose = useCallback(() => closeCart(), [closeCart]);
+  useModalControls({ containerRef: dialogRef, onClose: handleClose });
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") handleClose();
-    };
-    document.addEventListener("keydown", onKey);
-    const previouslyFocused = document.activeElement as HTMLElement | null;
-    dialogRef.current?.focus();
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-      previouslyFocused?.focus?.();
-    };
-  }, [handleClose]);
-
-  const onOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) handleClose();
+  const onOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) handleClose();
   };
 
   const handleIncrement = (item: CartItem) => {
@@ -134,12 +117,12 @@ const CartModal: React.FC = () => {
                     className="grid grid-cols-[48px_1fr_auto] gap-3 items-center py-3 border-b border-vr-border last:border-b-0"
                   >
                     <img
-                      src={p.thumbnail || FALLBACK_IMG}
+                      src={p.thumbnail || PRODUCT_ROW_FALLBACK}
                       alt=""
                       className="w-12 h-12 object-cover rounded-md bg-vr-surface-alt"
                       loading="lazy"
                       onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = FALLBACK_IMG;
+                        (e.currentTarget as HTMLImageElement).src = PRODUCT_ROW_FALLBACK;
                       }}
                     />
                     <div className="min-w-0">
@@ -211,12 +194,12 @@ const CartModal: React.FC = () => {
                   className="grid grid-cols-[64px_1fr_auto] gap-3 py-3 border-b border-vr-border last:border-b-0"
                 >
                   <img
-                    src={item.thumbnail || FALLBACK_IMG}
+                    src={item.thumbnail || PRODUCT_ROW_FALLBACK}
                     alt=""
                     className="w-16 h-16 object-cover rounded-[6px] bg-vr-surface-alt"
                     loading="lazy"
                     onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = FALLBACK_IMG;
+                      (e.currentTarget as HTMLImageElement).src = PRODUCT_ROW_FALLBACK;
                     }}
                   />
                   <div className="flex flex-col gap-1 min-w-0">
