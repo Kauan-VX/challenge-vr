@@ -65,13 +65,6 @@ const CartModal: React.FC = () => {
         title: item.title,
         price: item.price,
         thumbnail: item.thumbnail,
-        description: "",
-        discountPercentage: 0,
-        rating: 0,
-        stock: 0,
-        brand: "",
-        category: "",
-        images: [],
       }),
     );
   };

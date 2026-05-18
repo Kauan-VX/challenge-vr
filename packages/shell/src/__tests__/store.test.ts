@@ -10,21 +10,7 @@ describe("shell store", () => {
 
   it("aceita acoes do slice compartilhado", () => {
     const before = selectCartCount(store.getState());
-    store.dispatch(
-      addItem({
-        id: 999,
-        title: "Item",
-        description: "",
-        price: 1,
-        discountPercentage: 0,
-        rating: 0,
-        stock: 1,
-        brand: "",
-        category: "",
-        thumbnail: "",
-        images: [],
-      }),
-    );
+    store.dispatch(addItem({ id: 999, title: "Item", price: 1, thumbnail: "" }));
     expect(selectCartCount(store.getState())).toBe(before + 1);
   });
 });

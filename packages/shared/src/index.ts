@@ -1,4 +1,4 @@
-export type { Product, ProductsResponse, CartItem } from "./types/product";
+export type { Product, ProductsResponse, CartItem, CartItemInput } from "./types/product";
 export {
   cartReducer,
   addItem,

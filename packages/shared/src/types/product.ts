@@ -26,3 +26,5 @@ export interface CartItem {
   thumbnail: string;
   quantity: number;
 }
+
+export type CartItemInput = Pick<Product, "id" | "title" | "price" | "thumbnail">;

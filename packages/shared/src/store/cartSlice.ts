@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
-import type { CartItem, Product } from "../types/product";
+import type { CartItem, CartItemInput } from "../types/product";
 
 export interface CartState {
   items: CartItem[];
@@ -15,20 +15,14 @@ const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    addItem: (state, action: PayloadAction<Product>) => {
-      const product = action.payload;
-      const existing = state.items.find((it) => it.id === product.id);
+    addItem: (state, action: PayloadAction<CartItemInput>) => {
+      const input = action.payload;
+      const existing = state.items.find((it) => it.id === input.id);
       if (existing) {
         existing.quantity += 1;
         return;
       }
-      state.items.push({
-        id: product.id,
-        title: product.title,
-        price: product.price,
-        thumbnail: product.thumbnail,
-        quantity: 1,
-      });
+      state.items.push({ ...input, quantity: 1 });
     },
     removeItem: (state, action: PayloadAction<number>) => {
       state.items = state.items.filter((it) => it.id !== action.payload);
