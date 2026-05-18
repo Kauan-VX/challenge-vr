@@ -1,23 +1,24 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { selectCartCount, openCart, selectCartIsOpen, CartIcon } from "@vr/shared";
+import { useCartStore, selectCartCount, selectCartIsOpen, CartIcon } from "@vr/shared";
 import logo from "@vr/shared/src/assets/logo.png";
 import CartModal from "./components/CartModal";
+import HeaderSearch from "./components/HeaderSearch";
+import CategoryBar from "./components/CategoryBar";
 import "./styles/main.css";
 
 const Header: React.FC = () => {
-  const dispatch = useDispatch();
-  const cartCount = useSelector(selectCartCount);
-  const isOpen = useSelector(selectCartIsOpen);
+  const cartCount = useCartStore(selectCartCount);
+  const isOpen = useCartStore(selectCartIsOpen);
+  const openCart = useCartStore((s) => s.openCart);
 
   return (
     <header
       className="sticky top-0 z-50 bg-vr-surface border-b border-vr-border shadow-(--shadow-vr-sm)"
       role="banner"
     >
-      <div className="mx-auto flex items-center gap-5 px-4 py-4 max-w-vr-content sm:gap-3 sm:px-3 sm:py-3">
+      <div className="mx-auto flex items-center gap-4 px-4 py-3 max-w-vr-content sm:gap-2 sm:px-3">
         <a
-          className="inline-flex items-center gap-2 text-vr-text font-bold text-lg no-underline"
+          className="inline-flex items-center gap-2 text-vr-text font-bold text-lg no-underline shrink-0"
           href="#"
           aria-label="VR Beneficios"
         >
@@ -31,33 +32,15 @@ const Header: React.FC = () => {
           <span className="hidden md:inline">Marketplace</span>
         </a>
 
-        <nav className="hidden md:flex gap-5 ml-5 flex-1" aria-label="Principal">
-          <a
-            href="#"
-            className="text-vr-text-muted no-underline py-2 border-b-2 border-transparent transition-colors hover:text-vr-primary hover:border-vr-primary focus-visible:text-vr-primary focus-visible:outline-none focus-visible:border-vr-primary"
-          >
-            Produtos
-          </a>
-          <a
-            href="#"
-            className="text-vr-text-muted no-underline py-2 border-b-2 border-transparent transition-colors hover:text-vr-primary hover:border-vr-primary focus-visible:text-vr-primary focus-visible:outline-none focus-visible:border-vr-primary"
-          >
-            Categorias
-          </a>
-          <a
-            href="#"
-            className="text-vr-text-muted no-underline py-2 border-b-2 border-transparent transition-colors hover:text-vr-primary hover:border-vr-primary focus-visible:text-vr-primary focus-visible:outline-none focus-visible:border-vr-primary"
-          >
-            Ofertas
-          </a>
-        </nav>
+        <HeaderSearch />
 
         <button
           type="button"
-          className="ml-auto relative inline-flex items-center gap-2 px-4 py-2 rounded-[10px] bg-vr-primary-soft text-vr-primary font-semibold transition-colors hover:bg-vr-primary hover:text-white focus-visible:outline-3 focus-visible:outline-vr-primary/35 focus-visible:outline-offset-2"
-          onClick={() => dispatch(openCart())}
+          className="relative inline-flex items-center gap-2 px-4 py-2 rounded-[10px] bg-vr-primary-soft text-vr-primary font-semibold transition-colors hover:bg-vr-primary hover:text-white focus-visible:outline-3 focus-visible:outline-vr-primary/35 focus-visible:outline-offset-2 shrink-0"
+          onClick={openCart}
           aria-label={`Abrir carrinho (${cartCount} item${cartCount === 1 ? "" : "s"})`}
           data-testid="header-cart-button"
+          data-cart-target="true"
         >
           <CartIcon size={22} />
           <span className="hidden md:inline">Carrinho</span>
@@ -72,6 +55,8 @@ const Header: React.FC = () => {
           )}
         </button>
       </div>
+
+      <CategoryBar />
 
       {isOpen && <CartModal />}
     </header>

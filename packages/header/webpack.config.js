@@ -60,10 +60,11 @@ module.exports = (_env, argv) => {
         shared: {
           react: { singleton: true, requiredVersion: deps.react, eager: false },
           "react-dom": { singleton: true, requiredVersion: deps["react-dom"], eager: false },
-          "react-redux": { singleton: true, requiredVersion: deps["react-redux"], eager: false },
-          "@reduxjs/toolkit": {
+          zustand: { singleton: true, requiredVersion: deps.zustand, eager: false },
+          axios: { singleton: true, requiredVersion: deps.axios, eager: false },
+          "@tanstack/react-query": {
             singleton: true,
-            requiredVersion: deps["@reduxjs/toolkit"],
+            requiredVersion: deps["@tanstack/react-query"],
             eager: false,
           },
         },

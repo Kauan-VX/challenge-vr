@@ -1,43 +1,36 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { useDispatch, useSelector } from "react-redux";
 import {
+  useCartStore,
+  useCheckout,
   selectCartItems,
   selectCartTotal,
-  closeCart,
-  removeItem,
-  decrementItem,
-  addItem,
-  clearCart,
-  createCart,
   formatPrice,
   CloseIcon,
   PlusIcon,
   MinusIcon,
 } from "@vr/shared";
-import type { CartItem, CartResponse } from "@vr/shared";
+import type { CartItem } from "@vr/shared";
 
 const FALLBACK_IMG =
   'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="100%" height="100%" fill="%23eef0f5"/></svg>';
 
 const DEMO_USER_ID = 1;
 
-type CheckoutState =
-  | { status: "idle" }
-  | { status: "submitting" }
-  | { status: "success"; cart: CartResponse }
-  | { status: "error"; message: string };
-
 const CartModal: React.FC = () => {
-  const dispatch = useDispatch();
-  const items = useSelector(selectCartItems);
-  const total = useSelector(selectCartTotal);
+  const items = useCartStore(selectCartItems);
+  const total = useCartStore(selectCartTotal);
+  const closeCart = useCartStore((s) => s.closeCart);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const decrementItem = useCartStore((s) => s.decrementItem);
+  const addItem = useCartStore((s) => s.addItem);
+  const clearCart = useCartStore((s) => s.clearCart);
   const dialogRef = useRef<HTMLDivElement | null>(null);
-  const [checkout, setCheckout] = useState<CheckoutState>({ status: "idle" });
+  const checkout = useCheckout();
 
   const handleClose = useCallback(() => {
-    dispatch(closeCart());
-  }, [dispatch]);
+    closeCart();
+  }, [closeCart]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -59,27 +52,17 @@ const CartModal: React.FC = () => {
   };
 
   const handleIncrement = (item: CartItem) => {
-    dispatch(
-      addItem({
-        id: item.id,
-        title: item.title,
-        price: item.price,
-        thumbnail: item.thumbnail,
-      }),
-    );
+    addItem({
+      id: item.id,
+      title: item.title,
+      price: item.price,
+      thumbnail: item.thumbnail,
+    });
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (items.length === 0) return;
-    setCheckout({ status: "submitting" });
-    try {
-      const cart = await createCart({ userId: DEMO_USER_ID, items });
-      setCheckout({ status: "success", cart });
-      dispatch(clearCart());
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Erro inesperado ao finalizar";
-      setCheckout({ status: "error", message });
-    }
+    checkout.mutate({ userId: DEMO_USER_ID, items }, { onSuccess: () => clearCart() });
   };
 
   return createPortal(
@@ -110,33 +93,109 @@ const CartModal: React.FC = () => {
           </button>
         </header>
 
-        {checkout.status === "success" ? (
-          <div
-            className="px-5 py-12 text-center flex flex-col gap-2"
-            data-testid="cart-confirmation"
-          >
-            <p className="m-0 text-lg font-bold text-vr-success">Pedido confirmado!</p>
-            <p className="m-0 text-vr-text-muted text-sm">
-              Numero do pedido: <strong>#{checkout.cart.id}</strong>
-            </p>
-            <p className="m-0 text-vr-text-muted text-sm">
-              {checkout.cart.totalProducts} produto
-              {checkout.cart.totalProducts === 1 ? "" : "s"} ({checkout.cart.totalQuantity} unidade
-              {checkout.cart.totalQuantity === 1 ? "" : "s"})
-            </p>
-            <p className="my-3 text-[22px] font-extrabold">
-              Total: {formatPrice(checkout.cart.total)}
-            </p>
-            <button
-              type="button"
-              className="bg-vr-primary text-white border-0 px-3 py-3 rounded-[10px] font-bold hover:bg-vr-primary-hover"
-              onClick={() => {
-                setCheckout({ status: "idle" });
-                handleClose();
-              }}
-            >
-              Continuar comprando
-            </button>
+        {checkout.isSuccess && checkout.data ? (
+          <div className="flex flex-col flex-1 overflow-hidden" data-testid="cart-confirmation">
+            <div className="px-5 pt-6 pb-4 text-center">
+              <div className="inline-grid place-items-center w-14 h-14 rounded-full bg-vr-primary-soft text-vr-success mx-auto mb-3">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M5 12.5L10 17.5L19 7.5"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+              <p className="m-0 text-xl font-extrabold text-vr-text">Pedido confirmado!</p>
+              <p className="m-0 mt-1 text-vr-text-muted text-sm">
+                Pedido <strong className="text-vr-text">#{checkout.data.id}</strong> ·{" "}
+                {checkout.data.totalProducts} produto{checkout.data.totalProducts === 1 ? "" : "s"}{" "}
+                · {checkout.data.totalQuantity} unidade
+                {checkout.data.totalQuantity === 1 ? "" : "s"}
+              </p>
+            </div>
+
+            {checkout.data.products.length > 0 && (
+              <ul
+                className="list-none m-0 px-4 py-2 overflow-y-auto flex-1 border-t border-vr-border"
+                data-testid="cart-confirmation-list"
+              >
+                {checkout.data.products.map((p) => (
+                  <li
+                    key={p.id}
+                    className="grid grid-cols-[48px_1fr_auto] gap-3 items-center py-3 border-b border-vr-border last:border-b-0"
+                  >
+                    <img
+                      src={p.thumbnail || FALLBACK_IMG}
+                      alt=""
+                      className="w-12 h-12 object-cover rounded-md bg-vr-surface-alt"
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = FALLBACK_IMG;
+                      }}
+                    />
+                    <div className="min-w-0">
+                      <p className="m-0 text-sm font-semibold truncate" title={p.title}>
+                        {p.title}
+                      </p>
+                      <p className="m-0 text-xs text-vr-text-muted">
+                        {p.quantity}x · {formatPrice(p.price)}
+                        {p.discountPercentage > 0 && (
+                          <span className="ml-1 text-vr-success font-semibold">
+                            -{Math.round(p.discountPercentage)}%
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <span className="text-sm font-bold tabular-nums">{formatPrice(p.total)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="border-t border-vr-border px-5 py-4 grid gap-2">
+              <div className="flex items-baseline justify-between text-sm">
+                <span className="text-vr-text-muted">Subtotal</span>
+                <span className="tabular-nums line-through text-vr-text-muted">
+                  {formatPrice(checkout.data.total)}
+                </span>
+              </div>
+              {checkout.data.total > checkout.data.discountedTotal && (
+                <div className="flex items-baseline justify-between text-sm">
+                  <span className="text-vr-text-muted">Voce economizou</span>
+                  <span className="tabular-nums font-semibold text-vr-success">
+                    -{formatPrice(checkout.data.total - checkout.data.discountedTotal)}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-baseline justify-between pt-1">
+                <span className="font-semibold">Total pago</span>
+                <span
+                  className="text-[22px] font-extrabold tabular-nums text-vr-success"
+                  data-testid="cart-confirmation-total"
+                >
+                  {formatPrice(checkout.data.discountedTotal)}
+                </span>
+              </div>
+              <button
+                type="button"
+                className="mt-3 bg-vr-primary text-white border-0 px-3 py-3 rounded-[10px] font-bold hover:bg-vr-primary-hover"
+                onClick={() => {
+                  checkout.reset();
+                  handleClose();
+                }}
+              >
+                Continuar comprando
+              </button>
+            </div>
           </div>
         ) : items.length === 0 ? (
           <div className="px-5 py-12 text-center text-vr-text-muted" data-testid="cart-empty">
@@ -171,7 +230,7 @@ const CartModal: React.FC = () => {
                       <button
                         type="button"
                         className="w-[26px] h-[26px] rounded-md border border-vr-border bg-vr-surface text-vr-text inline-grid place-items-center hover:bg-vr-surface-alt"
-                        onClick={() => dispatch(decrementItem(item.id))}
+                        onClick={() => decrementItem(item.id)}
                         aria-label={`Diminuir quantidade de ${item.title}`}
                       >
                         <MinusIcon size={14} />
@@ -199,7 +258,7 @@ const CartModal: React.FC = () => {
                     <button
                       type="button"
                       className="border-0 bg-transparent text-vr-danger text-sm p-0 hover:underline"
-                      onClick={() => dispatch(removeItem(item.id))}
+                      onClick={() => removeItem(item.id)}
                       aria-label={`Remover ${item.title}`}
                     >
                       Remover
@@ -210,20 +269,20 @@ const CartModal: React.FC = () => {
             </ul>
 
             <footer className="border-t border-vr-border px-5 py-4 grid gap-3">
-              {checkout.status === "error" && (
+              {checkout.isError && (
                 <div
                   className="bg-vr-danger-soft border border-[#f3b9b9] text-vr-danger px-3 py-2 rounded-md text-sm"
                   role="alert"
                   data-testid="cart-error"
                 >
-                  {checkout.message}
+                  {checkout.error?.message ?? "Erro inesperado ao finalizar"}
                 </div>
               )}
               <button
                 type="button"
                 className="bg-transparent border border-vr-border rounded-md py-2 text-vr-text-muted font-semibold hover:text-vr-danger hover:border-vr-danger disabled:opacity-60 disabled:cursor-progress"
-                onClick={() => dispatch(clearCart())}
-                disabled={checkout.status === "submitting"}
+                onClick={() => clearCart()}
+                disabled={checkout.isPending}
               >
                 Limpar carrinho
               </button>
@@ -237,10 +296,10 @@ const CartModal: React.FC = () => {
                 type="button"
                 className="bg-vr-primary text-white border-0 py-3 rounded-[10px] font-bold hover:bg-vr-primary-hover disabled:opacity-60 disabled:cursor-progress"
                 onClick={handleCheckout}
-                disabled={checkout.status === "submitting"}
+                disabled={checkout.isPending}
                 data-testid="cart-checkout"
               >
-                {checkout.status === "submitting" ? "Finalizando..." : "Finalizar pedido"}
+                {checkout.isPending ? "Finalizando..." : "Finalizar pedido"}
               </button>
             </footer>
           </>
