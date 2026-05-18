@@ -30,9 +30,9 @@ beforeEach(() => {
   resetCartStore();
   resetFiltersStore();
   httpGet.mockReset();
-  httpGet.mockImplementation((url: string, config?: { params?: { skip?: number } }) => {
-    const skip = config?.params?.skip ?? 0;
-    return Promise.resolve({ data: productsPage(skip + 1, 12, 24) }) as ReturnType<typeof http.get>;
+  httpGet.mockImplementation(async (_url, config) => {
+    const skip = (config as { params?: { skip?: number } } | undefined)?.params?.skip ?? 0;
+    return { data: productsPage(skip + 1, 12, 24) } as never;
   });
 });
 

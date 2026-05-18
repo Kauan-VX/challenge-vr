@@ -7,20 +7,20 @@ import ProductCard from "../components/ProductCard";
 
 const baseProduct: Product = {
   id: 42,
-  title: "Tenis Esportivo",
+  title: "Mascara Beleza",
   description: "Confortavel e leve",
   price: 250,
   discountPercentage: 10,
   rating: 4.5,
   stock: 12,
-  brand: "VR Sports",
-  category: "sports",
+  brand: "VR Cosmetics",
+  category: "beauty",
   thumbnail: "https://dummyjson.com/image/i/products/42/thumbnail.jpg",
   images: [],
 };
 
-const renderCard = (product = baseProduct) => {
-  const utils = render(<ProductCard product={product} />);
+const renderCard = (product: Product = baseProduct, onOpenDetails?: (p: Product) => void) => {
+  const utils = render(<ProductCard product={product} onOpenDetails={onOpenDetails} />);
   return { ...utils, user: userEvent.setup() };
 };
 
@@ -31,10 +31,14 @@ beforeEach(() => {
 describe("ProductCard", () => {
   it("mostra titulo, marca e preco com desconto aplicado", () => {
     renderCard();
-    expect(screen.getByText("Tenis Esportivo")).toBeInTheDocument();
-    expect(screen.getByText("VR Sports")).toBeInTheDocument();
-    const priceText = screen.getByText(/R\$\s?225,00/);
-    expect(priceText).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Mascara Beleza" })).toBeInTheDocument();
+    expect(screen.getByText("VR Cosmetics")).toBeInTheDocument();
+    expect(screen.getByText(/R\$\s?225,00/)).toBeInTheDocument();
+  });
+
+  it("traduz a categoria para pt-BR no badge superior", () => {
+    renderCard();
+    expect(screen.getByText("Beleza")).toBeInTheDocument();
   });
 
   it("mostra badge com porcentagem de desconto quando aplicavel", () => {
@@ -45,6 +49,20 @@ describe("ProductCard", () => {
   it("omite badge quando nao ha desconto", () => {
     renderCard({ ...baseProduct, discountPercentage: 0 });
     expect(screen.queryByLabelText("Desconto")).not.toBeInTheDocument();
+  });
+
+  it("dispara onOpenDetails ao clicar na imagem", async () => {
+    const onOpen = jest.fn();
+    const { user } = renderCard(baseProduct, onOpen);
+    await user.click(screen.getByTestId("open-details-42"));
+    expect(onOpen).toHaveBeenCalledWith(baseProduct);
+  });
+
+  it("dispara onOpenDetails ao clicar no titulo", async () => {
+    const onOpen = jest.fn();
+    const { user } = renderCard(baseProduct, onOpen);
+    await user.click(screen.getByRole("button", { name: "Mascara Beleza" }));
+    expect(onOpen).toHaveBeenCalledWith(baseProduct);
   });
 
   it("adiciona item ao carrinho ao clicar em adicionar", async () => {

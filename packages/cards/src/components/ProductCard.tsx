@@ -1,61 +1,57 @@
 import React, { memo, useRef, useState } from "react";
 import {
-  useCartStore,
+  CartStepper,
+  PRODUCT_THUMBNAIL_FALLBACK,
+  Stars,
   flyToCart,
   formatPrice,
-  humanizeSlug,
-  MinusIcon,
-  PlusIcon,
-  Product,
   selectCartItemQuantity,
-  StarIcon,
-  TrashIcon,
+  translateCategory,
+  useCartStore,
+  type Product,
 } from "@vr/shared";
 
 interface Props {
   product: Product;
+  onOpenDetails?: (product: Product) => void;
 }
-
-const FALLBACK_IMG =
-  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><rect width="100%" height="100%" fill="%23eef0f5"/></svg>';
 
 const LOW_STOCK_THRESHOLD = 10;
 
-const ProductCardImpl: React.FC<Props> = ({ product }) => {
+function ProductCard({ product, onOpenDetails }: Props) {
   const quantityInCart = useCartStore(selectCartItemQuantity(product.id));
-  const addItem = useCartStore((s) => s.addItem);
-  const decrementItem = useCartStore((s) => s.decrementItem);
-  const removeItem = useCartStore((s) => s.removeItem);
-  const [imgFailed, setImgFailed] = useState(false);
+  const addItem = useCartStore((state) => state.addItem);
+  const decrementItem = useCartStore((state) => state.decrementItem);
+  const removeItem = useCartStore((state) => state.removeItem);
   const imageRef = useRef<HTMLImageElement | null>(null);
+  const [imageFailed, setImageFailed] = useState(false);
 
   const hasDiscount = product.discountPercentage > 0;
   const discounted = hasDiscount
     ? product.price * (1 - product.discountPercentage / 100)
     : product.price;
   const savings = product.price - discounted;
-  const isInCart = quantityInCart > 0;
   const outOfStock = product.stock <= 0;
   const lowStock = !outOfStock && product.stock <= LOW_STOCK_THRESHOLD;
+  const isInCart = quantityInCart > 0;
+
+  const openDetails = () => onOpenDetails?.(product);
 
   const handleAdd = () => {
     if (outOfStock) return;
-    const img = imageRef.current;
-    if (img) {
+    const image = imageRef.current;
+    if (image) {
       flyToCart({
-        imageUrl: img.currentSrc || img.src,
-        source: img.getBoundingClientRect(),
+        imageUrl: image.currentSrc || image.src,
+        source: image.getBoundingClientRect(),
       });
     }
     addItem(product);
   };
 
   const handleDecrement = () => {
-    if (quantityInCart <= 1) {
-      removeItem(product.id);
-    } else {
-      decrementItem(product.id);
-    }
+    if (quantityInCart <= 1) removeItem(product.id);
+    else decrementItem(product.id);
   };
 
   return (
@@ -64,15 +60,25 @@ const ProductCardImpl: React.FC<Props> = ({ product }) => {
       data-testid={`product-card-${product.id}`}
       aria-label={product.title}
     >
-      <div className="relative aspect-square bg-vr-surface-alt grid place-items-center overflow-hidden">
+      <button
+        type="button"
+        onClick={openDetails}
+        className="relative aspect-square bg-vr-surface-alt grid place-items-center overflow-hidden cursor-pointer rounded-t-2xl outline-none focus-visible:ring-2 focus-visible:ring-vr-primary/60 focus-visible:ring-inset"
+        aria-label={`Ver detalhes de ${product.title}`}
+        data-testid={`open-details-${product.id}`}
+      >
         <img
           ref={imageRef}
-          src={imgFailed ? FALLBACK_IMG : product.thumbnail || FALLBACK_IMG}
+          src={
+            imageFailed
+              ? PRODUCT_THUMBNAIL_FALLBACK
+              : product.thumbnail || PRODUCT_THUMBNAIL_FALLBACK
+          }
           alt={product.title}
           loading="lazy"
           decoding="async"
-          onError={() => setImgFailed(true)}
-          className="w-full h-full object-cover"
+          onError={() => setImageFailed(true)}
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
         <div className="absolute top-2 left-2 flex flex-col gap-1.5 items-start">
           {hasDiscount && (
@@ -94,23 +100,27 @@ const ProductCardImpl: React.FC<Props> = ({ product }) => {
             </span>
           )}
         </div>
-      </div>
+      </button>
 
       <div className="px-4 pt-3 pb-4 flex flex-col gap-2 flex-1">
         <div className="flex items-center justify-between gap-2 text-[11px] text-vr-text-muted uppercase tracking-wider">
           <span className="font-semibold truncate">
-            {product.brand || humanizeSlug(product.category)}
+            {product.brand || translateCategory(product.category)}
           </span>
           <span className="text-vr-text-muted/80 whitespace-nowrap">
-            {humanizeSlug(product.category)}
+            {translateCategory(product.category)}
           </span>
         </div>
 
-        <h3
-          className="m-0 text-base font-semibold leading-tight line-clamp-2 min-h-[2.6em]"
-          title={product.title}
-        >
-          {product.title}
+        <h3 className="m-0 min-h-[2.6em]">
+          <button
+            type="button"
+            onClick={openDetails}
+            className="text-left text-base font-semibold leading-tight line-clamp-2 hover:text-vr-primary transition-colors focus-visible:outline-none focus-visible:text-vr-primary"
+            title={product.title}
+          >
+            {product.title}
+          </button>
         </h3>
 
         {product.description && (
@@ -123,13 +133,8 @@ const ProductCardImpl: React.FC<Props> = ({ product }) => {
         )}
 
         <div className="flex items-center gap-2 text-xs">
-          <span
-            className="inline-flex items-center gap-1 text-[#c47a00] font-semibold"
-            aria-label={`Avaliacao ${product.rating}`}
-          >
-            <StarIcon size={14} />
-            <span>{product.rating.toFixed(1)}</span>
-          </span>
+          <Stars value={product.rating} size={14} />
+          <span className="font-semibold text-vr-text">{product.rating.toFixed(1)}</span>
           {!outOfStock && !lowStock && (
             <span className="text-vr-text-muted">· {product.stock} em estoque</span>
           )}
@@ -152,43 +157,19 @@ const ProductCardImpl: React.FC<Props> = ({ product }) => {
         )}
 
         {isInCart ? (
-          <div
-            className="mt-2 grid grid-cols-[40px_1fr_40px] items-stretch h-11 rounded-md border-2 border-vr-primary bg-vr-primary-soft overflow-hidden"
-            data-testid={`stepper-${product.id}`}
-            role="group"
-            aria-label={`Quantidade de ${product.title} no carrinho`}
-          >
-            <button
-              type="button"
-              onClick={handleDecrement}
-              className="inline-grid place-items-center text-vr-primary hover:bg-vr-primary hover:text-white transition-colors"
-              data-testid={
-                quantityInCart === 1 ? `remove-${product.id}` : `decrement-${product.id}`
-              }
-              aria-label={
-                quantityInCart === 1
-                  ? `Remover ${product.title} do carrinho`
-                  : `Diminuir quantidade de ${product.title}`
-              }
-            >
-              {quantityInCart === 1 ? <TrashIcon size={16} /> : <MinusIcon size={16} />}
-            </button>
-            <span
-              className="inline-flex items-center justify-center font-bold text-vr-primary text-sm tabular-nums"
-              data-testid={`stepper-count-${product.id}`}
-            >
-              {quantityInCart} no carrinho
-            </span>
-            <button
-              type="button"
-              onClick={handleAdd}
-              disabled={quantityInCart >= product.stock}
-              className="inline-grid place-items-center text-vr-primary hover:bg-vr-primary hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-vr-primary"
-              data-testid={`add-${product.id}`}
-              aria-label={`Adicionar mais um ${product.title} ao carrinho`}
-            >
-              <PlusIcon size={16} />
-            </button>
+          <div className="mt-2">
+            <CartStepper
+              quantity={quantityInCart}
+              maxQuantity={product.stock}
+              productTitle={product.title}
+              onDecrement={handleDecrement}
+              onIncrement={handleAdd}
+              testId={`stepper-${product.id}`}
+              removeTestId={`remove-${product.id}`}
+              decrementTestId={`decrement-${product.id}`}
+              incrementTestId={`add-${product.id}`}
+              countTestId={`stepper-count-${product.id}`}
+            />
           </div>
         ) : (
           <button
@@ -207,8 +188,6 @@ const ProductCardImpl: React.FC<Props> = ({ product }) => {
       </div>
     </article>
   );
-};
+}
 
-const ProductCard = memo(ProductCardImpl);
-ProductCard.displayName = "ProductCard";
-export default ProductCard;
+export default memo(ProductCard);

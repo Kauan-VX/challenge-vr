@@ -1,8 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import ProductCard from "./components/ProductCard";
+import ProductDetailModal from "./components/ProductDetailModal";
 import { useProducts } from "./hooks/useProducts";
 import { useInfiniteScroll } from "./hooks/useInfiniteScroll";
-import { useFiltersStore, selectSearch, selectCategory, translateCategory } from "@vr/shared";
+import {
+  type Product,
+  useFiltersStore,
+  selectSearch,
+  selectCategory,
+  translateCategory,
+} from "@vr/shared";
 import "./styles/main.css";
 
 const PAGE_SIZE = 12;
@@ -11,6 +18,7 @@ const Cards: React.FC = () => {
   const search = useFiltersStore(selectSearch);
   const category = useFiltersStore(selectCategory);
   const clearFilters = useFiltersStore((s) => s.clearFilters);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const { items, total, status, error, loadMore, hasMore, isFetchingMore } = useProducts({
     search,
@@ -97,7 +105,7 @@ const Cards: React.FC = () => {
           >
             {items.map((p) => (
               <li key={p.id}>
-                <ProductCard product={p} />
+                <ProductCard product={p} onOpenDetails={setSelectedProduct} />
               </li>
             ))}
           </ul>
@@ -129,6 +137,10 @@ const Cards: React.FC = () => {
             ) : null}
           </div>
         </>
+      )}
+
+      {selectedProduct && (
+        <ProductDetailModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
       )}
     </section>
   );
