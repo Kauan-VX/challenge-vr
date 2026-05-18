@@ -153,7 +153,7 @@ const CartModal: React.FC = () => {
               </div>
               {checkout.data.total > checkout.data.discountedTotal && (
                 <div className="flex items-baseline justify-between text-sm">
-                  <span className="text-vr-text-muted">Voce economizou</span>
+                  <span className="text-vr-text-muted">Você economizou</span>
                   <span className="tabular-nums font-semibold text-vr-success">
                     -{formatPrice(checkout.data.total - checkout.data.discountedTotal)}
                   </span>
@@ -182,7 +182,7 @@ const CartModal: React.FC = () => {
           </div>
         ) : items.length === 0 ? (
           <div className="px-5 py-12 text-center text-vr-text-muted" data-testid="cart-empty">
-            <p>Seu carrinho esta vazio.</p>
+            <p>Seu carrinho está vazio.</p>
             <p className="text-sm mt-2">Adicione produtos a partir da listagem.</p>
           </div>
         ) : (

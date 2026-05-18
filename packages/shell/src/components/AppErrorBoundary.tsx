@@ -38,7 +38,7 @@ class AppErrorBoundary extends React.Component<Props, State> {
         <div className="max-w-md w-full bg-vr-surface border border-vr-border rounded-[10px] p-6 text-center shadow-(--shadow-vr-lg)">
           <h1 className="m-0 text-xl font-bold text-vr-danger">Algo deu errado.</h1>
           <p className="mt-2 mb-4 text-vr-text-muted">
-            Nao foi possivel iniciar a aplicacao. Tente recarregar a pagina.
+            Não foi possível iniciar a aplicação. Tente recarregar a página.
           </p>
           <button
             type="button"

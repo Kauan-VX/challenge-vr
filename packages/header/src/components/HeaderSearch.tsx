@@ -10,6 +10,8 @@ const HeaderSearch: React.FC = () => {
     setValue(storedSearch);
   }, [storedSearch]);
 
+  // debounce de 300ms: rapido o bastante pra parecer responsivo, longo
+  // o bastante pra nao disparar request a cada tecla
   useEffect(() => {
     const id = setTimeout(() => {
       if (value !== storedSearch) setSearch(value);

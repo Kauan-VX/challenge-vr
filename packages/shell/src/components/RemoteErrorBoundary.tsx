@@ -33,9 +33,9 @@ class RemoteErrorBoundary extends React.Component<Props, State> {
           className="m-5 p-4 border border-dashed border-vr-danger bg-[#fff5f5] text-vr-danger rounded-[10px]"
           role="alert"
         >
-          <strong>Nao foi possivel carregar o modulo {this.props.name}.</strong>
+          <strong>Não foi possível carregar o módulo {this.props.name}.</strong>
           <p className="mt-1 mb-0 text-vr-text-muted">
-            Verifique se o micro frontend correspondente esta em execucao.
+            Verifique se o micro frontend correspondente está em execução.
           </p>
         </div>
       );

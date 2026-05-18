@@ -50,37 +50,17 @@ packages/
 └── cards/    grid de produtos com infinite scroll e stepper de carrinho
 ```
 
-`@vr/shared` é importado por workspace npm e tem seus módulos `react`, `zustand`, `@tanstack/react-query` compartilhados como **singleton** via Module Federation — garante uma instância única do React e do store em runtime.
+`@vr/shared` é importado por npm workspaces.
 
-## Decisões técnicas
+## Stack
 
-### Gerenciamento de estado: Zustand (não Redux)
+React 18 + TypeScript (strict), Webpack 5 + `ModuleFederationPlugin`, Zustand (carrinho e filtros), TanStack Query + axios para HTTP, Tailwind v4 com tokens em `@theme`. Testes em Jest + Testing Library (`jest-environment-jsdom`).
 
-O carrinho é estado global compartilhado entre Header e Cards (MFEs separados). Avaliei três caminhos:
+`react`, `zustand`, `axios` e `@tanstack/react-query` são marcados como singleton no MF — sem isso o store dupla-instancia entre shell e remotes. O store do carrinho também é fixado em `globalThis.__VR_CART_STORE__` ([cartStore.ts:72-76](packages/shared/src/store/cartStore.ts#L72-L76)) como cinto-e-suspensório pra esse mesmo problema.
 
-- **Context da React**: fica preso ao Provider do MFE que o instancia. Cross-MFE só com Provider montado no shell, e cada remote precisaria importar o hook do mesmo módulo — frágil.
-- **Redux Toolkit**: funciona, mas exige `Provider` no shell + boilerplate (slices, actions, thunks). Para um único slice de carrinho, é desproporcional.
-- **Zustand** _(escolhido)_: store em módulo, sem Provider, com tipagem direta de actions/state. Cria-se uma instância única registrada em `globalThis.__VR_CART_STORE__` para sobreviver à possível dupla importação de `@vr/shared` em diferentes bundles (`packages/shared/src/store/cartStore.ts:23-26`).
+Persistência do carrinho via middleware `persist` do Zustand, com `partialize` deixando `isOpen` de fora — F5 não reabre o modal.
 
-**Persistência** — middleware `persist` salva `items` em `localStorage` com chave `vr.cart` e `version: 1`. `isOpen` fica de fora via `partialize` (não faria sentido o carrinho abrir sozinho ao recarregar). Versionamento permite invalidar dados antigos quando o schema do `CartItem` mudar.
-
-### HTTP: axios + TanStack Query
-
-Todo I/O passa por uma única instância do axios em [packages/shared/src/api/http.ts](packages/shared/src/api/http.ts) (`baseURL` da env, `timeout: 15s`, headers JSON). Em cima dela:
-
-- `useInfiniteQuery` em [`useProducts`](packages/cards/src/hooks/useProducts.ts) para listagem + scroll infinito (cache, refetch automático ao trocar filtro, cancelamento via `AbortSignal`).
-- `useQuery` em [`useCategories`](packages/shared/src/hooks/useCategories.ts) com `staleTime: Infinity` — categorias não mudam por sessão.
-- `useMutation` em [`useCheckout`](packages/shared/src/hooks/useCheckout.ts) — substitui o `useState<CheckoutState>` manual no CartModal; estado de loading/error/success vem do React Query.
-
-`axios` e `@tanstack/react-query` são compartilhados como **singleton** via Module Federation em todos os MFEs que consomem HTTP.
-
-### Outros
-
-- **React 18 + TypeScript strict** + Webpack 5 + `ModuleFederationPlugin`.
-- **Tailwind v4** com tokens da marca em `@theme` ([packages/shared/src/styles/theme.css](packages/shared/src/styles/theme.css)).
-- **Jest + Testing Library** com `jest-environment-jsdom`. 67 testes, 13 suites, cobrindo store, API, hooks, componentes e fluxos end-to-end de carrinho. Testes mockam a instância `http` via `jest.spyOn` (não `global.fetch`).
-
-### Recursos implementados
+## Features
 
 - Listagem com **scroll infinito** (`IntersectionObserver` + fallback de botão para ambientes sem suporte).
 - **Busca debounced** no header (300ms), aplicada a `/products/search`.
@@ -134,7 +114,6 @@ npm run vercel-build
 npx serve out -p 5000   # ou qualquer static server
 ```
 
-## Notas de produção
+## Notas
 
-- Não persiste `isOpen` do carrinho propositalmente — F5 não reabre o modal.
-- Não há autenticação: `POST /carts/add` usa `userId: 1` fixo (DummyJSON é mock).
+Sem autenticação: `POST /carts/add` usa `userId: 1` fixo (DummyJSON é mock).

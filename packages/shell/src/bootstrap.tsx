@@ -8,7 +8,7 @@ import "./styles/main.css";
 
 const container = document.getElementById("root");
 if (!container) {
-  throw new Error("Elemento root nao encontrado no documento");
+  throw new Error("Elemento root não encontrado no documento");
 }
 
 createRoot(container).render(

@@ -87,7 +87,7 @@ const CategoryBar: React.FC = () => {
             <button
               type="button"
               onClick={() => scrollBy(SCROLL_STEP)}
-              aria-label="Proximas categorias"
+              aria-label="Próximas categorias"
               className="absolute right-0 top-1/2 -translate-y-1/2 z-10 inline-grid place-items-center w-8 h-8 rounded-full bg-vr-primary-soft text-vr-primary-strong shadow-(--shadow-vr-sm) opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:bg-vr-primary hover:text-white"
             >
               <svg

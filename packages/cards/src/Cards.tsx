@@ -133,7 +133,7 @@ const Cards: React.FC = () => {
                 Carregar mais
               </button>
             ) : items.length > 0 ? (
-              <span>Voce viu tudo por aqui.</span>
+              <span>Você viu tudo por aqui.</span>
             ) : null}
           </div>
         </>
