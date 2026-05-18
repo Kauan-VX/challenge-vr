@@ -3,54 +3,38 @@ import path from "path";
 
 const config: StorybookConfig = {
   stories: ["../packages/*/src/**/*.stories.@(ts|tsx)"],
-  addons: ["@storybook/addon-essentials", "@storybook/addon-a11y"],
+  addons: [
+    "@storybook/addon-essentials",
+    "@storybook/addon-a11y",
+    "@storybook/addon-webpack5-compiler-swc",
+  ],
   framework: {
     name: "@storybook/react-webpack5",
     options: {},
   },
-  typescript: {
-    check: false,
-    reactDocgen: "react-docgen-typescript",
-  },
-  webpackFinal: async (config) => {
-    config.module = config.module || { rules: [] };
-    config.module.rules = config.module.rules || [];
+  webpackFinal: async (cfg) => {
+    cfg.module = cfg.module || { rules: [] };
+    cfg.module.rules = cfg.module.rules || [];
 
-    config.module.rules = config.module.rules.filter((rule) => {
-      if (!rule || typeof rule !== "object") return true;
+    const cssRule = cfg.module.rules.find((rule) => {
+      if (!rule || typeof rule !== "object") return false;
       const test = (rule as { test?: RegExp }).test;
-      return !(test instanceof RegExp && test.test("a.css"));
+      return test instanceof RegExp && test.test(".css");
     });
+    if (cssRule && typeof cssRule === "object") {
+      const r = cssRule as { use?: unknown[] };
+      if (Array.isArray(r.use)) {
+        r.use.push("postcss-loader");
+      }
+    }
 
-    config.module.rules.push({
-      test: /\.tsx?$/,
-      exclude: /node_modules/,
-      use: {
-        loader: "ts-loader",
-        options: {
-          transpileOnly: true,
-          configFile: path.resolve(__dirname, "tsconfig.json"),
-        },
-      },
-    });
-
-    config.module.rules.push({
-      test: /\.css$/,
-      use: ["style-loader", "css-loader", "postcss-loader"],
-    });
-
-    config.module.rules.push({
+    cfg.module.rules.push({
       test: /\.(png|jpe?g|gif|svg|webp)$/i,
       type: "asset/resource",
+      include: path.resolve(__dirname, "../packages"),
     });
 
-    config.resolve = config.resolve || {};
-    config.resolve.alias = {
-      ...(config.resolve.alias || {}),
-      "@vr/shared": path.resolve(__dirname, "../packages/shared"),
-    };
-
-    return config;
+    return cfg;
   },
 };
 

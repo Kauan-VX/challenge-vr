@@ -1,10 +1,7 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "noEmit": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noEmit": true
   },
-  "include": ["./**/*", "../packages/*/src/**/*"],
-  "exclude": ["../node_modules", "../packages/*/dist"]
+  "include": ["./**/*.ts", "./**/*.tsx", "../packages/*/src/**/*.stories.tsx"]
 }

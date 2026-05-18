@@ -1,49 +1,63 @@
 import React from "react";
 import type { Meta, StoryObj } from "@storybook/react";
-import { CartIcon, CloseIcon, StarIcon, PlusIcon, MinusIcon, SearchIcon } from "./index";
+import { CartIcon, CloseIcon, MinusIcon, PlusIcon, SearchIcon, StarIcon, TrashIcon } from "./index";
 
 const icons = [
   { name: "CartIcon", Component: CartIcon },
   { name: "CloseIcon", Component: CloseIcon },
+  { name: "SearchIcon", Component: SearchIcon },
   { name: "StarIcon", Component: StarIcon },
   { name: "PlusIcon", Component: PlusIcon },
   { name: "MinusIcon", Component: MinusIcon },
-  { name: "SearchIcon", Component: SearchIcon },
-] as const;
+  { name: "TrashIcon", Component: TrashIcon },
+];
 
-interface ShowcaseProps {
-  size?: number;
-  tone?: "default" | "primary";
-}
-
-const Showcase: React.FC<ShowcaseProps> = ({ size = 28, tone = "default" }) => (
+const Gallery: React.FC<{ size: number; stroke: number }> = ({ size, stroke }) => (
   <ul
-    className={`list-none m-0 p-4 grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-3 ${
-      tone === "primary" ? "text-vr-primary" : "text-vr-text"
-    }`}
+    style={{
+      listStyle: "none",
+      margin: 0,
+      padding: 24,
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+      gap: 16,
+    }}
   >
     {icons.map(({ name, Component }) => (
       <li
         key={name}
-        className="border border-vr-border rounded-xl p-4 flex flex-col items-center gap-2 bg-vr-surface"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 8,
+          padding: 16,
+          borderRadius: 8,
+          background: "#fff",
+          border: "1px solid #dde4dc",
+          color: "#111613",
+        }}
       >
-        <Component size={size} />
-        <code className="text-xs text-vr-text-muted">{name}</code>
+        <Component size={size} strokeWidth={stroke} aria-label={name} />
+        <span style={{ fontSize: 12, fontFamily: "monospace" }}>{name}</span>
       </li>
     ))}
   </ul>
 );
 
-const meta: Meta<typeof Showcase> = {
-  title: "Design System/Icones",
-  component: Showcase,
+const meta: Meta<typeof Gallery> = {
+  title: "Shared/Icons",
+  component: Gallery,
   parameters: { layout: "fullscreen" },
+  argTypes: {
+    size: { control: { type: "range", min: 12, max: 64, step: 2 } },
+    stroke: { control: { type: "range", min: 1, max: 4, step: 0.25 } },
+  },
 };
 
 export default meta;
-type Story = StoryObj<typeof Showcase>;
+type Story = StoryObj<typeof Gallery>;
 
-export const Padrao: Story = { args: { size: 28, tone: "default" } };
-export const Pequeno: Story = { args: { size: 16, tone: "default" } };
-export const Grande: Story = { args: { size: 48, tone: "default" } };
-export const NaCorPrimaria: Story = { args: { size: 28, tone: "primary" } };
+export const Default: Story = {
+  args: { size: 24, stroke: 2 },
+};

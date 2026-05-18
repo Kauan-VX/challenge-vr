@@ -1,28 +1,31 @@
+import React from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import type { Product } from "@vr/shared";
 import ProductCard from "./ProductCard";
 
-const base: Product = {
+const baseProduct: Product = {
   id: 1,
-  title: "Tenis Esportivo Performance",
-  description: "Confortavel, leve e ideal para corridas urbanas.",
-  price: 250,
-  discountPercentage: 0,
-  rating: 4.5,
-  stock: 12,
-  brand: "VR Sports",
-  category: "mens-shoes",
+  title: "Essence Mascara Lash Princess",
+  description:
+    "The Essence Mascara Lash Princess is a popular mascara known for its volumizing and lengthening effects.",
+  price: 9.99,
+  discountPercentage: 10.48,
+  rating: 2.56,
+  stock: 99,
+  brand: "Essence",
+  category: "beauty",
   thumbnail:
-    "https://cdn.dummyjson.com/products/images/mens-shoes/Calvin%20Klein%20Slip%20On%20Loafers/thumbnail.png",
+    "https://cdn.dummyjson.com/product-images/beauty/essence-mascara-lash-princess/thumbnail.webp",
   images: [],
 };
 
 const meta: Meta<typeof ProductCard> = {
   title: "Cards/ProductCard",
   component: ProductCard,
+  parameters: { layout: "centered" },
   decorators: [
     (Story) => (
-      <div style={{ maxWidth: 260, padding: 16, background: "#f6f8f6" }}>
+      <div style={{ width: 260 }}>
         <Story />
       </div>
     ),
@@ -32,23 +35,58 @@ const meta: Meta<typeof ProductCard> = {
 export default meta;
 type Story = StoryObj<typeof ProductCard>;
 
-export const Padrao: Story = { args: { product: base } };
-
 export const ComDesconto: Story = {
-  args: { product: { ...base, discountPercentage: 18, price: 320 } },
+  args: { product: baseProduct },
 };
 
-export const TituloLongo: Story = {
+export const SemDesconto: Story = {
   args: {
-    product: {
-      ...base,
-      title:
-        "Tenis de Performance Premium com tecnologia de amortecimento adaptativo edicao limitada 2026",
-      discountPercentage: 25,
+    product: { ...baseProduct, discountPercentage: 0 },
+  },
+};
+
+export const EstoqueBaixo: Story = {
+  args: {
+    product: { ...baseProduct, stock: 4 },
+  },
+};
+
+export const SemEstoque: Story = {
+  args: {
+    product: { ...baseProduct, stock: 0 },
+  },
+};
+
+export const NoCarrinhoUmaUnidade: Story = {
+  args: { product: baseProduct },
+  parameters: {
+    cart: {
+      items: [
+        {
+          id: baseProduct.id,
+          title: baseProduct.title,
+          price: baseProduct.price,
+          thumbnail: baseProduct.thumbnail,
+          quantity: 1,
+        },
+      ],
     },
   },
 };
 
-export const SemImagem: Story = {
-  args: { product: { ...base, thumbnail: "" } },
+export const NoCarrinhoMultiplo: Story = {
+  args: { product: baseProduct },
+  parameters: {
+    cart: {
+      items: [
+        {
+          id: baseProduct.id,
+          title: baseProduct.title,
+          price: baseProduct.price,
+          thumbnail: baseProduct.thumbnail,
+          quantity: 3,
+        },
+      ],
+    },
+  },
 };

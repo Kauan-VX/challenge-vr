@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import type { CartItem } from "@vr/shared";
 import CartModal from "./CartModal";
 
-const itens = [
+const itens: CartItem[] = [
   {
     id: 1,
     title: "Tenis Esportivo Performance",
@@ -31,18 +32,16 @@ const itens = [
 const meta: Meta<typeof CartModal> = {
   title: "Header/CartModal",
   component: CartModal,
-  parameters: {
-    layout: "fullscreen",
-  },
+  parameters: { layout: "fullscreen" },
 };
 
 export default meta;
 type Story = StoryObj<typeof CartModal>;
 
 export const Vazio: Story = {
-  parameters: { preloadedState: { cart: { items: [], isOpen: true } } },
+  parameters: { cart: { items: [], isOpen: true } },
 };
 
 export const ComItens: Story = {
-  parameters: { preloadedState: { cart: { items: itens, isOpen: true } } },
+  parameters: { cart: { items: itens, isOpen: true } },
 };

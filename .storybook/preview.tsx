@@ -1,23 +1,63 @@
-import React from "react";
+import React, { useLayoutEffect } from "react";
 import type { Preview } from "@storybook/react";
-import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cartReducer } from "../packages/shared/src";
+import {
+  http,
+  useCartStore,
+  useFiltersStore,
+  type CartItem,
+  type Category,
+} from "../packages/shared/src";
 import "./storybook.css";
 
+declare module "@storybook/react" {
+  interface Parameters {
+    cart?: { items?: CartItem[]; isOpen?: boolean };
+    filters?: { search?: string; category?: string | null };
+    httpMock?: {
+      products?: unknown;
+      categories?: Category[];
+    };
+  }
+}
+
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
+  defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false, gcTime: 0 } },
 });
+
+const DEFAULT_CATEGORIES: Category[] = [
+  { slug: "beauty", name: "Beauty", url: "" },
+  { slug: "fragrances", name: "Fragrances", url: "" },
+  { slug: "furniture", name: "Furniture", url: "" },
+  { slug: "laptops", name: "Laptops", url: "" },
+  { slug: "smartphones", name: "Smartphones", url: "" },
+];
+
+const originalGet = http.get.bind(http);
+const originalPost = http.post.bind(http);
+
+function installHttpStub(mock: { categories?: Category[]; products?: unknown }) {
+  const categories = mock.categories ?? DEFAULT_CATEGORIES;
+  const productsResponse = mock.products ?? { products: [], total: 0, skip: 0, limit: 0 };
+  http.get = ((url: string) => {
+    if (url.includes("/products/categories")) {
+      return Promise.resolve({ data: categories });
+    }
+    return Promise.resolve({ data: productsResponse });
+  }) as typeof http.get;
+  http.post = (() => Promise.resolve({ data: {} })) as typeof http.post;
+}
+
+function restoreHttp() {
+  http.get = originalGet;
+  http.post = originalPost;
+}
 
 const preview: Preview = {
   parameters: {
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
-      matchers: {
-        color: /(background|color)$/i,
-        date: /Date$/i,
-      },
+      matchers: { color: /(background|color)$/i, date: /Date$/i },
     },
     backgrounds: {
       default: "light",
@@ -37,15 +77,26 @@ const preview: Preview = {
   },
   decorators: [
     (Story, ctx) => {
-      const store = configureStore({
-        reducer: { cart: cartReducer },
-        preloadedState: ctx.parameters.preloadedState,
-      });
+      const cart = ctx.parameters.cart ?? {};
+      const filters = ctx.parameters.filters ?? {};
+      const httpMock = ctx.parameters.httpMock ?? {};
+
+      useLayoutEffect(() => {
+        useCartStore.setState({
+          items: cart.items ?? [],
+          isOpen: cart.isOpen ?? false,
+        });
+        useFiltersStore.setState({
+          search: filters.search ?? "",
+          category: filters.category ?? null,
+        });
+        installHttpStub(httpMock);
+        return () => restoreHttp();
+      }, [cart, filters, httpMock]);
+
       return (
         <QueryClientProvider client={queryClient}>
-          <Provider store={store}>
-            <Story />
-          </Provider>
+          <Story />
         </QueryClientProvider>
       );
     },
