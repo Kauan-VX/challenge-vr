@@ -1,5 +1,3 @@
-export { Icon } from "./Icon";
-export type { IconProps } from "./Icon";
 export { CartIcon } from "./CartIcon";
 export { CloseIcon } from "./CloseIcon";
 export { StarIcon } from "./StarIcon";

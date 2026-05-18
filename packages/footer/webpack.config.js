@@ -1,10 +1,7 @@
 const path = require("path");
-const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { ModuleFederationPlugin } = require("webpack").container;
 const deps = require("./package.json").dependencies;
-
-const API_BASE_URL = process.env.API_BASE_URL || "https://dummyjson.com";
 
 const PORT = 3002;
 
@@ -50,9 +47,6 @@ module.exports = (_env, argv) => {
           react: { singleton: true, requiredVersion: deps.react },
           "react-dom": { singleton: true, requiredVersion: deps["react-dom"] },
         },
-      }),
-      new webpack.DefinePlugin({
-        "process.env.API_BASE_URL": JSON.stringify(API_BASE_URL),
       }),
       new HtmlWebpackPlugin({ template: "./public/index.html" }),
     ],
