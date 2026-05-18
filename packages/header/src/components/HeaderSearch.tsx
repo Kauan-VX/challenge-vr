@@ -43,7 +43,7 @@ const HeaderSearch: React.FC = () => {
           placeholder="Buscar produtos, marcas e categorias..."
           aria-label="Buscar produtos"
           data-testid="header-search-input"
-          className="w-full pl-10 pr-10 py-2.5 rounded-full border border-vr-border bg-vr-surface text-base text-vr-text transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-vr-primary focus:shadow-[0_0_0_3px_rgba(0,199,60,0.2)]"
+          className="w-full pl-10 pr-10 py-2.5 rounded-full border border-vr-border bg-vr-surface text-base text-vr-text transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-vr-primary focus:shadow-[0_0_0_3px_rgba(0,199,60,0.2)] [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
         />
         {value && (
           <button
