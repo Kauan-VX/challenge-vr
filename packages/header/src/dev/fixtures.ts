@@ -1,10 +1,5 @@
 import type { Product } from "@vr/shared";
 
-/**
- * Dados usados apenas pelo bootstrap standalone do Header (npm start -w @vr/header)
- * para pré-popular o carrinho e permitir visualizar o componente isoladamente.
- * Em modo federado (consumido pelo shell), nada disso é executado.
- */
 export const demoProduct: Product = {
   id: 1,
   title: "Produto demonstração",

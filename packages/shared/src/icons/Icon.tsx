@@ -15,14 +15,6 @@ interface BaseProps extends IconProps {
   fill?: string;
 }
 
-/**
- * Componente base do design system de icones VR.
- *
- * Convencao:
- * - 24x24 viewBox, stroke `currentColor`, fill transparente — herdam cor/tamanho do contexto.
- * - Por padrao decorativos (`aria-hidden="true"`); passe `aria-label` quando o icone
- *   carregar o significado sozinho (ex.: botao apenas com icone sem texto visivel).
- */
 export const Icon: React.FC<BaseProps> = ({
   className,
   size = 20,

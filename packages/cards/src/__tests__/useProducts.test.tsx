@@ -84,7 +84,6 @@ describe("useProducts", () => {
     await waitFor(() => expect(result.current.items).toHaveLength(24));
     expect(result.current.hasMore).toBe(false);
 
-    // chamar loadMore alem do total não dispara fetch
     const callsBefore = (global.fetch as jest.Mock).mock.calls.length;
     act(() => result.current.loadMore());
     expect((global.fetch as jest.Mock).mock.calls.length).toBe(callsBefore);

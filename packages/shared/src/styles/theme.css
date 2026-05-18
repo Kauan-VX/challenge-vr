@@ -1,11 +1,3 @@
-/*
- * Design system VR — tokens expostos via @theme do Tailwind v4.
- * Cada token vira simultaneamente uma CSS custom property (consumivel
- * fora do contexto Tailwind) e uma utility class (bg-vr-primary, etc.).
- * Mantemos aqui apenas o que e proprio da marca; o restante reusa as
- * escalas padrao do Tailwind (spacing 4px, radius sm/md/lg, etc.).
- */
-
 @theme {
   --color-vr-bg: #f6f8f6;
   --color-vr-surface: #ffffff;
