@@ -1,6 +1,6 @@
-import React from 'react';
-import logo from '@vr/shared/src/assets/logo.png';
-import './styles/main.css';
+import React from "react";
+import logo from "@vr/shared/src/assets/logo.png";
+import "./styles/main.css";
 
 const year = new Date().getFullYear();
 
@@ -21,49 +21,67 @@ const Footer: React.FC = () => {
           </span>
         </div>
 
-        <nav
-          className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6"
-          aria-label="Rodape"
-        >
+        <nav className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6" aria-label="Rodape">
           <div className="flex flex-col gap-2">
-            <h3 className="m-0 mb-2 text-sm uppercase tracking-wider text-white">
-              Produto
-            </h3>
-            <a className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none" href="#">
+            <h3 className="m-0 mb-2 text-sm uppercase tracking-wider text-white">Produto</h3>
+            <a
+              className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none"
+              href="#"
+            >
               Catalogo
             </a>
-            <a className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none" href="#">
+            <a
+              className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none"
+              href="#"
+            >
               Beneficios
             </a>
-            <a className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none" href="#">
+            <a
+              className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none"
+              href="#"
+            >
               Parceiros
             </a>
           </div>
           <div className="flex flex-col gap-2">
-            <h3 className="m-0 mb-2 text-sm uppercase tracking-wider text-white">
-              Empresa
-            </h3>
-            <a className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none" href="#">
+            <h3 className="m-0 mb-2 text-sm uppercase tracking-wider text-white">Empresa</h3>
+            <a
+              className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none"
+              href="#"
+            >
               Sobre
             </a>
-            <a className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none" href="#">
+            <a
+              className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none"
+              href="#"
+            >
               Carreiras
             </a>
-            <a className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none" href="#">
+            <a
+              className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none"
+              href="#"
+            >
               Imprensa
             </a>
           </div>
           <div className="flex flex-col gap-2">
-            <h3 className="m-0 mb-2 text-sm uppercase tracking-wider text-white">
-              Suporte
-            </h3>
-            <a className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none" href="#">
+            <h3 className="m-0 mb-2 text-sm uppercase tracking-wider text-white">Suporte</h3>
+            <a
+              className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none"
+              href="#"
+            >
               Central de ajuda
             </a>
-            <a className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none" href="#">
+            <a
+              className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none"
+              href="#"
+            >
               Contato
             </a>
-            <a className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none" href="#">
+            <a
+              className="text-vr-dark-text text-base no-underline transition-colors hover:text-vr-primary focus-visible:text-vr-primary focus-visible:outline-none"
+              href="#"
+            >
               Status
             </a>
           </div>
