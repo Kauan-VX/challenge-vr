@@ -2,6 +2,8 @@
 
 Teste técnico — micro frontends com Module Federation consumindo a [DummyJSON](https://dummyjson.com). Shell + 3 remotes (Header, Footer, Cards).
 
+Deploy ao vivo: **https://challenge-vr.vercel.app/** — Storybook em **https://challenge-vr.vercel.app/storybook/**.
+
 ## Rodando
 
 ```bash
@@ -38,7 +40,7 @@ packages/
 
 Jest + Testing Library + `jest-environment-jsdom`, configurado via `jest --projects` (cada package roda os próprios). 67 testes cobrindo store, API client, hooks, componentes e o fluxo end-to-end do carrinho. Mocks via `jest.spyOn(http, "get")` em vez de `global.fetch`.
 
-Storybook cobre os componentes principais isolados. Stories setam o estado do store via `parameters.cart` / `parameters.filters` (decorator em [.storybook/preview.tsx](.storybook/preview.tsx)) e stubam o fetch por padrão.
+Storybook cobre os componentes principais isolados ([challenge-vr.vercel.app/storybook/](https://challenge-vr.vercel.app/storybook/)). Stories setam o estado do store via `parameters.cart` / `parameters.filters` (decorator em [.storybook/preview.tsx](.storybook/preview.tsx)) e stubam o fetch por padrão.
 
 ## Deploy
 

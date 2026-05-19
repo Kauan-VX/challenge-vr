@@ -9,6 +9,7 @@ const layout = [
   { from: "packages/header/dist", to: "header" },
   { from: "packages/footer/dist", to: "footer" },
   { from: "packages/cards/dist", to: "cards" },
+  { from: "storybook-static", to: "storybook" },
 ];
 
 fs.rmSync(out, { recursive: true, force: true });
