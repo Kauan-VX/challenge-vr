@@ -1,19 +1,19 @@
 # VR Marketplace
 
-Teste técnico — micro frontends com Module Federation consumindo a [DummyJSON](https://dummyjson.com). Shell + 3 remotes (Header, Footer, Cards).
+Teste técnico de micro frontends com Module Federation consumindo a [DummyJSON](https://dummyjson.com). Um shell e 3 remotes (Header, Footer, Cards).
 
 ## Rodando
 
-Requer Node 20.19+ (LTS) ou 22.13+ — restrição vinda de `jsdom@26` / `jest@30`. Testado em Node 22.
+Precisa de Node 20.19+ ou 22.13+ (jsdom@26 e jest@30 obrigam). Testei em v22.
 
 ```bash
 npm install
 npm start            # sobe os 4 dev servers
 ```
 
-App em `http://localhost:3000`. Cada remote também sobe standalone em 3001/3002/3003 pra desenvolvimento isolado. Se a 3000 estiver ocupada o shell pula pra próxima livre (e avisa no log).
+App em `http://localhost:3000`. Os remotes também sobem standalone nas 3001/3002/3003 se você quiser mexer num isolado. Se a 3000 estiver ocupada o shell escolhe a próxima livre e avisa no log.
 
-Outros scripts úteis: `npm test`, `npm run lint`, `npm run storybook`. Build de produção: `npm run build` (gera os 4 `dist/` independentes) ou `npm run build:static` (mesma coisa + Storybook + junta tudo em `out/` pra hospedagem estática).
+Outros scripts: `npm test`, `npm run lint`, `npm run storybook`. Pra build: `npm run build` (4 `dist/` separados) ou `npm run build:static` (junta tudo + Storybook em `out/`).
 
 ## Estrutura
 
@@ -28,26 +28,26 @@ packages/
 
 ## Por que estas escolhas
 
-**Zustand** no lugar de Redux — o estado do carrinho é um slice só, compartilhado entre Header e Cards. Redux Toolkit dava pra usar, mas exigiria `Provider` no shell e boilerplate desproporcional. Zustand cobre o caso sem Provider e ainda permite o pin em `globalThis.__VR_CART_STORE__` ([cartStore.ts:72-76](packages/shared/src/store/cartStore.ts#L72-L76)) que blinda contra dupla-instanciação quando um remote roda standalone.
+Cart e filtros ficam no **Zustand**. Pensei em Redux Toolkit no começo, mas o estado é um array de items mais duas flags, não compensava o `Provider` no shell nem o boilerplate. O Zustand ainda permite pinar a store em `globalThis.__VR_CART_STORE__` ([cartStore.ts:72-76](packages/shared/src/store/cartStore.ts#L72-L76)), o que evita cada remote instanciar uma cópia própria quando roda standalone (foi o primeiro bug que apareceu).
 
-**TanStack Query** pra todo I/O — listagem com `useInfiniteQuery` (cache, refetch ao trocar filtro, cancelamento via `AbortSignal`), categorias com `staleTime: Infinity`, checkout via `useMutation`. Substituiu o `useState<LoadingState>` manual que daria pra fazer na unha.
+I/O com **TanStack Query**. A listagem é `useInfiniteQuery` (cancela request com `AbortSignal` ao trocar filtro, reusa páginas no cache), categorias com `staleTime: Infinity` porque não mudam, checkout via `useMutation`. Substituiu um `useState<LoadingState>` manual que dava pra fazer na unha, mas o ganho com refetch e cache compensa.
 
-**Singletons no Module Federation** — `react`, `react-dom`, `zustand`, `axios` e `@tanstack/react-query` marcados como singleton em todos os MFEs. Sem isso o store dupla-instancia e o carrinho do header não enxerga o que o Cards adicionou.
+No Module Federation marquei `react`, `react-dom`, `zustand`, `axios` e `@tanstack/react-query` como **singleton** em todos os MFEs. Sem isso o store duplica e o Header não enxerga o que o Cards adicionou.
 
-**Tailwind v4** com tokens da marca em `@theme` ([theme.css](packages/shared/src/styles/theme.css)) — evita reescrever a paleta em cada componente.
+Tailwind v4 com tokens da marca em `@theme` ([theme.css](packages/shared/src/styles/theme.css)).
 
 ## Testes
 
-Jest + Testing Library + `jest-environment-jsdom`, configurado via `jest --projects` (cada package roda os próprios). 67 testes cobrindo store, API client, hooks, componentes e o fluxo end-to-end do carrinho. Mocks via `jest.spyOn(http, "get")` em vez de `global.fetch`.
+Jest + Testing Library + jest-environment-jsdom, via `jest --projects` (cada package roda os próprios). São 81 testes passando hoje, cobrindo store, API client, hooks, componentes e o fluxo end-to-end do carrinho. Os mocks de HTTP saem por `jest.spyOn(http, "get")` em vez de `global.fetch`, fica agnóstico ao adapter do axios.
 
-Storybook cobre os componentes principais isolados — `npm run storybook` (porta 6006). Stories setam o estado do store via `parameters.cart` / `parameters.filters` (decorator em [.storybook/preview.tsx](.storybook/preview.tsx)) e stubam o fetch por padrão.
+Storybook em `npm run storybook` (porta 6006). As stories setam o estado da store via `parameters.cart`/`parameters.filters` e stubam o fetch (decorator em [.storybook/preview.tsx](.storybook/preview.tsx)).
 
 ## Build de produção
 
-`npm run build` gera o `dist/` de cada package independente. `npm run build:static` empilha tudo (incluindo o Storybook) em `out/` pra hospedagem estática — o shell resolve os remotes por path relativo (`header@/header/remoteEntry.js`) e `publicPath: "auto"` cuida do resto. Em dev, o shell aponta pra URL absoluta (`http://localhost:3001/...`).
+`npm run build` gera os 4 `dist/` independentes. O `build:static` junta tudo (com o Storybook) em `out/` pra hospedagem estática, o shell resolve os remotes por path relativo (`header@/header/remoteEntry.js`) e o `publicPath: "auto"` resolve o resto. Em dev as URLs ficam absolutas (`http://localhost:3001/...`).
 
-Pra testar o bundle de produção localmente: `npm run build:static && npx serve out`.
+Pra ver o bundle de produção localmente: `npm run build:static && npx serve out`.
 
 ## Notas
 
-Sem autenticação — `POST /carts/add` usa `userId: 1` fixo (DummyJSON é mock). `isOpen` do carrinho fica fora do `persist` propositalmente: F5 não reabre o modal.
+Sem autenticação. O `POST /carts/add` usa `userId: 1` fixo porque a DummyJSON é mock mesmo. O `isOpen` do carrinho fica propositalmente fora do `persist`, então F5 não reabre o modal.

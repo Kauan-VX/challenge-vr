@@ -21,7 +21,9 @@ function createFiltersStore(): FiltersStore {
     search: "",
     category: null,
     setSearch: (value) => set({ search: value }),
-    setCategory: (slug) => set({ category: slug }),
+    // troca de categoria zera o search: a DummyJSON combina os dois por interseção,
+    // entao manter um termo antigo costuma cair em "sem resultados" e parece bug
+    setCategory: (slug) => set({ category: slug, search: "" }),
     clearFilters: () => set({ search: "", category: null }),
   }));
 }
