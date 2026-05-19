@@ -6,7 +6,6 @@
   "framework": null,
   "headers": [
     {
-      "//": "must-revalidate nao foi suficiente: a edge cache da Vercel volta e meia segurava remoteEntry antigo e o pessoal abria a app com header/footer/cards desatualizados depois de deploy. no-store derruba qualquer cache (browser, edge, intermediario). Custa um round trip extra por load, mas pra os entries do Module Federation isso resolve a dor de cabeca.",
       "source": "/(header|footer|cards)/remoteEntry.js",
       "headers": [{ "key": "Cache-Control", "value": "no-store" }]
     }

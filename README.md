@@ -48,6 +48,8 @@ Storybook cobre os componentes principais isolados ([challenge-vr.vercel.app/sto
 
 `vercel.json` + `vercel-build` montam os 4 `dist/` em um único `out/`. Em produção o shell resolve os remotes por path relativo (`header@/header/remoteEntry.js`); em dev por URL absoluta (`http://localhost:3001/...`). `publicPath: "auto"` faz o resto.
 
+Os 3 `remoteEntry.js` saem com `Cache-Control: no-store` ([vercel.json](vercel.json)). Tentei `must-revalidate` antes, mas a edge da Vercel segurava versão antiga e o pessoal pegava header/footer/cards desatualizados depois de deploy. `no-store` custa um round trip extra por load, mas pros entries do Module Federation vale a pena — os chunks com hash continuam cacheados eternamente normal.
+
 Pra testar localmente: `npm run vercel-build && npx serve out`.
 
 ## Notas
