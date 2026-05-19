@@ -1,6 +1,17 @@
-import React from "react";
 import type { Meta, StoryObj } from "@storybook/react";
-import { CartIcon, CloseIcon, MinusIcon, PlusIcon, SearchIcon, StarIcon, TrashIcon } from "./index";
+import {
+  CartIcon,
+  CloseIcon,
+  MinusIcon,
+  PackageIcon,
+  PlusIcon,
+  ReturnIcon,
+  SearchIcon,
+  ShieldIcon,
+  StarIcon,
+  TrashIcon,
+  TruckIcon,
+} from "./index";
 
 const icons = [
   { name: "CartIcon", Component: CartIcon },
@@ -10,9 +21,13 @@ const icons = [
   { name: "PlusIcon", Component: PlusIcon },
   { name: "MinusIcon", Component: MinusIcon },
   { name: "TrashIcon", Component: TrashIcon },
+  { name: "PackageIcon", Component: PackageIcon },
+  { name: "TruckIcon", Component: TruckIcon },
+  { name: "ShieldIcon", Component: ShieldIcon },
+  { name: "ReturnIcon", Component: ReturnIcon },
 ];
 
-const Gallery: React.FC<{ size: number; stroke: number }> = ({ size, stroke }) => (
+const Gallery = ({ size, stroke }: { size: number; stroke: number }) => (
   <ul
     style={{
       listStyle: "none",

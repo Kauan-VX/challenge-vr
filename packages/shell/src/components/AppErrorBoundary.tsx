@@ -46,7 +46,7 @@ class AppErrorBoundary extends React.Component<Props, State> {
           </p>
           <button
             type="button"
-            className="bg-vr-primary text-white border-0 px-4 py-2 rounded-[10px] font-bold hover:bg-vr-primary-hover"
+            className="bg-vr-primary text-white border-0 px-4 py-2 rounded-[10px] font-bold hover:bg-vr-primary-hover transition-colors duration-200"
             onClick={this.handleReload}
           >
             Recarregar

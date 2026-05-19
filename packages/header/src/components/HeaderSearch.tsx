@@ -37,17 +37,21 @@ const HeaderSearch: React.FC = () => {
     commit("");
   };
 
+  const hasValue = value.length > 0;
+
   return (
     <form
       role="search"
-      className="flex-1 min-w-0"
+      className="flex-1 min-w-0 max-w-2xl mx-auto"
       onSubmit={(e) => {
         e.preventDefault();
         commit(value);
       }}
     >
-      <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-vr-text-muted pointer-events-none">
+      <div
+        className={`group relative flex items-center rounded-full bg-vr-surface-alt border border-transparent transition-all duration-200 hover:bg-vr-surface hover:border-vr-border focus-within:bg-vr-surface focus-within:border-vr-primary focus-within:shadow-[0_0_0_4px_rgba(0,199,60,0.15)] ${hasValue ? "bg-vr-surface border-vr-border" : ""}`}
+      >
+        <span className="pl-4 pr-2 text-vr-text-muted group-focus-within:text-vr-primary transition-colors pointer-events-none">
           <SearchIcon size={18} />
         </span>
         <input
@@ -55,17 +59,22 @@ const HeaderSearch: React.FC = () => {
           type="search"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="Buscar produtos, marcas e categorias..."
+          placeholder="Buscar produtos"
           aria-label="Buscar produtos"
           data-testid="header-search-input"
-          className="w-full pl-10 pr-10 py-2.5 rounded-full border border-vr-border bg-vr-surface text-base text-vr-text transition-[border-color,box-shadow] duration-150 focus:outline-none focus:border-vr-primary focus:shadow-[0_0_0_3px_rgba(0,199,60,0.2)] [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          className="flex-1 min-w-0 py-2.5 pr-3 bg-transparent text-base text-vr-text placeholder:text-vr-text-muted focus:outline-none [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none [&::-webkit-search-results-button]:appearance-none [&::-webkit-search-results-decoration]:appearance-none"
         />
-        {value && (
+        {hasValue && (
           <button
             type="button"
             onClick={handleClear}
             aria-label="Limpar busca"
-            className="absolute right-2 top-1/2 -translate-y-1/2 inline-grid place-items-center w-7 h-7 rounded-full text-vr-text-muted hover:bg-vr-surface-alt hover:text-vr-text"
+            title=""
+            className="mr-2 inline-grid place-items-center w-7 h-7 rounded-full text-vr-text-muted hover:bg-vr-surface-alt hover:text-vr-text transition-colors"
           >
             <CloseIcon size={14} />
           </button>

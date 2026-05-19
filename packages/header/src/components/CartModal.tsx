@@ -50,7 +50,7 @@ const CartModal: React.FC = () => {
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-vr-overlay flex items-stretch justify-end z-[1000] animate-vr-fade"
+      className="fixed inset-0 bg-vr-overlay flex items-stretch justify-end z-1000 animate-vr-fade"
       onMouseDown={onOverlayClick}
       data-testid="cart-overlay"
     >
@@ -68,7 +68,7 @@ const CartModal: React.FC = () => {
           </h2>
           <button
             type="button"
-            className="border-0 bg-transparent inline-grid place-items-center w-8 h-8 rounded-full text-vr-text-muted hover:bg-vr-surface-alt hover:text-vr-text"
+            className="border-0 bg-transparent inline-grid place-items-center w-8 h-8 rounded-full text-vr-text-muted hover:bg-vr-surface-alt hover:text-vr-text transition-colors duration-200"
             onClick={handleClose}
             aria-label="Fechar carrinho"
           >
@@ -170,7 +170,7 @@ const CartModal: React.FC = () => {
               </div>
               <button
                 type="button"
-                className="mt-3 bg-vr-primary text-white border-0 px-3 py-3 rounded-[10px] font-bold hover:bg-vr-primary-hover"
+                className="mt-3 bg-vr-primary text-white border-0 px-3 py-3 rounded-[10px] font-bold hover:bg-vr-primary-hover transition-colors duration-200"
                 onClick={() => {
                   checkout.reset();
                   handleClose();
@@ -196,7 +196,7 @@ const CartModal: React.FC = () => {
                   <img
                     src={item.thumbnail || PRODUCT_ROW_FALLBACK}
                     alt=""
-                    className="w-16 h-16 object-cover rounded-[6px] bg-vr-surface-alt"
+                    className="w-16 h-16 object-cover rounded-md bg-vr-surface-alt"
                     loading="lazy"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src = PRODUCT_ROW_FALLBACK;
@@ -212,21 +212,21 @@ const CartModal: React.FC = () => {
                     >
                       <button
                         type="button"
-                        className="w-[26px] h-[26px] rounded-md border border-vr-border bg-vr-surface text-vr-text inline-grid place-items-center hover:bg-vr-surface-alt"
+                        className="w-6.5 h-6.5 rounded-md border border-vr-border bg-vr-surface text-vr-text inline-grid place-items-center hover:bg-vr-surface-alt transition-colors duration-200"
                         onClick={() => decrementItem(item.id)}
                         aria-label={`Diminuir quantidade de ${item.title}`}
                       >
                         <MinusIcon size={14} />
                       </button>
                       <span
-                        className="min-w-[18px] text-center tabular-nums"
+                        className="min-w-4.5 text-center tabular-nums"
                         data-testid={`qty-${item.id}`}
                       >
                         {item.quantity}
                       </span>
                       <button
                         type="button"
-                        className="w-[26px] h-[26px] rounded-md border border-vr-border bg-vr-surface text-vr-text inline-grid place-items-center hover:bg-vr-surface-alt"
+                        className="w-6.5 h-6.5 rounded-md border border-vr-border bg-vr-surface text-vr-text inline-grid place-items-center hover:bg-vr-surface-alt transition-colors duration-200"
                         onClick={() => handleIncrement(item)}
                         aria-label={`Aumentar quantidade de ${item.title}`}
                       >
@@ -240,7 +240,7 @@ const CartModal: React.FC = () => {
                     </span>
                     <button
                       type="button"
-                      className="border-0 bg-transparent text-vr-danger text-sm p-0 hover:underline"
+                      className="border-0 bg-transparent text-vr-danger text-sm p-0 hover:underline hover:text-vr-danger transition-colors duration-200"
                       onClick={() => removeItem(item.id)}
                       aria-label={`Remover ${item.title}`}
                     >
@@ -263,7 +263,7 @@ const CartModal: React.FC = () => {
               )}
               <button
                 type="button"
-                className="bg-transparent border border-vr-border rounded-md py-2 text-vr-text-muted font-semibold hover:text-vr-danger hover:border-vr-danger disabled:opacity-60 disabled:cursor-progress"
+                className="bg-transparent border border-vr-border rounded-md py-2 text-vr-text-muted font-semibold hover:text-vr-danger hover:border-vr-danger transition-colors duration-200 disabled:opacity-60 disabled:cursor-progress"
                 onClick={() => clearCart()}
                 disabled={checkout.isPending}
               >
@@ -277,7 +277,7 @@ const CartModal: React.FC = () => {
               </div>
               <button
                 type="button"
-                className="bg-vr-primary text-white border-0 py-3 rounded-[10px] font-bold hover:bg-vr-primary-hover disabled:opacity-60 disabled:cursor-progress"
+                className="bg-vr-primary text-white border-0 py-3 rounded-[10px] font-bold hover:bg-vr-primary-hover transition-colors duration-200 disabled:opacity-60 disabled:cursor-progress"
                 onClick={handleCheckout}
                 disabled={checkout.isPending}
                 data-testid="cart-checkout"

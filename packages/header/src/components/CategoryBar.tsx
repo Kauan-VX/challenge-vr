@@ -118,7 +118,7 @@ const CategoryBar: React.FC = () => {
             className={
               category === null
                 ? "shrink-0 px-3 py-1.5 text-sm font-bold rounded-md bg-vr-primary text-white"
-                : "shrink-0 px-3 py-1.5 text-sm font-semibold rounded-md text-vr-primary-strong hover:bg-vr-primary/15 transition-colors"
+                : "shrink-0 px-3 py-1.5 text-sm font-semibold rounded-md text-vr-primary-strong hover:bg-vr-primary/15 transition-all duration-200 ease-out hover:scale-[1.03] active:scale-100"
             }
           >
             Todos
@@ -143,7 +143,7 @@ const CategoryBar: React.FC = () => {
                     className={
                       active
                         ? "shrink-0 px-3 py-1.5 text-sm font-bold rounded-md bg-vr-primary text-white"
-                        : "shrink-0 px-3 py-1.5 text-sm font-semibold rounded-md text-vr-primary-strong hover:bg-vr-primary/15 transition-colors"
+                        : "shrink-0 px-3 py-1.5 text-sm font-semibold rounded-md text-vr-primary-strong hover:bg-vr-primary/15 transition-all duration-200 ease-out hover:scale-[1.03] active:scale-100"
                     }
                   >
                     {translateCategory(c.slug)}

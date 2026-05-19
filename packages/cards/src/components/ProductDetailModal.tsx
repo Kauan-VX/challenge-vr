@@ -61,7 +61,7 @@ const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
   const removeItem = useCartStore((state) => state.removeItem);
 
   const dialogRef = useRef<HTMLDivElement | null>(null);
-  const galleryImageRef = useRef<HTMLImageElement | null>(null);
+  const galleryImageRefs = useRef<(HTMLImageElement | null)[]>([]);
   useModalControls({ containerRef: dialogRef, onClose });
 
   const images = useMemo(
@@ -70,6 +70,12 @@ const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
   );
   const [activeImage, setActiveImage] = useState(0);
   const [imageFailed, setImageFailed] = useState(false);
+
+  const hasMultipleImages = images.length > 1;
+  const goToImage = (index: number) => {
+    setActiveImage((index + images.length) % images.length);
+    setImageFailed(false);
+  };
 
   const hasDiscount = product.discountPercentage > 0;
   const discounted = hasDiscount
@@ -86,7 +92,7 @@ const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
 
   const handleAdd = () => {
     if (outOfStock) return;
-    const image = galleryImageRef.current;
+    const image = galleryImageRefs.current[activeImage] ?? galleryImageRefs.current[0];
     if (image) {
       flyToCart({
         imageUrl: image.currentSrc || image.src,
@@ -144,50 +150,80 @@ const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
         <div className="overflow-y-auto flex-1">
           <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-8 p-6">
             <div className="flex flex-col gap-3">
-              <div className="relative aspect-square rounded-2xl overflow-hidden bg-[radial-gradient(circle_at_30%_20%,#ffffff_0%,#eef2ee_60%,#dde4dc_100%)]">
-                <img
-                  ref={galleryImageRef}
-                  src={
-                    imageFailed
-                      ? PRODUCT_GALLERY_FALLBACK
-                      : images[activeImage] || PRODUCT_GALLERY_FALLBACK
-                  }
-                  alt={product.title}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-contain p-6 transition-opacity duration-200"
-                  onError={() => setImageFailed(true)}
-                />
+              <div className="group relative h-80 sm:h-95 md:h-110 rounded-2xl overflow-hidden bg-[radial-gradient(circle_at_30%_20%,#ffffff_0%,#eef2ee_60%,#dde4dc_100%)]">
+                {images.map((src, index) => (
+                  <img
+                    key={`${src}-${index}`}
+                    ref={(el) => {
+                      galleryImageRefs.current[index] = el;
+                    }}
+                    src={imageFailed ? PRODUCT_GALLERY_FALLBACK : src}
+                    alt={index === 0 ? product.title : ""}
+                    aria-hidden={index === 0 ? undefined : "true"}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                    className={`absolute inset-0 w-full h-full object-contain p-6 transition-opacity duration-500 ease-out ${index === activeImage ? "opacity-100" : "opacity-0"}`}
+                    onError={() => setImageFailed(true)}
+                  />
+                ))}
                 {hasDiscount && (
                   <span className="absolute top-4 left-4 bg-vr-primary text-white text-xs font-extrabold px-3 py-1.5 rounded-full shadow-(--shadow-vr-sm) tracking-wide">
                     -{Math.round(product.discountPercentage)}%
                   </span>
                 )}
+                {hasMultipleImages && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => goToImage(activeImage - 1)}
+                      aria-label="Imagem anterior"
+                      data-testid="detail-prev"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 inline-grid place-items-center w-9 h-9 rounded-full bg-white/90 text-vr-text shadow-(--shadow-vr-sm) hover:bg-white hover:scale-105 active:scale-95 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all"
+                    >
+                      <ChevronIcon direction="left" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => goToImage(activeImage + 1)}
+                      aria-label="Próxima imagem"
+                      data-testid="detail-next"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 inline-grid place-items-center w-9 h-9 rounded-full bg-white/90 text-vr-text shadow-(--shadow-vr-sm) hover:bg-white hover:scale-105 active:scale-95 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all"
+                    >
+                      <ChevronIcon direction="right" />
+                    </button>
+                    <span
+                      className="absolute bottom-3 right-3 bg-black/55 text-white text-xs font-bold px-2.5 py-1 rounded-full tabular-nums backdrop-blur-sm"
+                      data-testid="detail-counter"
+                    >
+                      {activeImage + 1} / {images.length}
+                    </span>
+                  </>
+                )}
               </div>
-              {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto" data-testid="detail-thumbs">
+              {hasMultipleImages && (
+                <div
+                  className="flex gap-2.5 overflow-x-auto overflow-y-hidden py-2 -my-1 -mx-1 px-1 scroll-smooth"
+                  data-testid="detail-thumbs"
+                >
                   {images.map((src, index) => {
                     const active = index === activeImage;
                     return (
                       <button
                         key={`${src}-${index}`}
                         type="button"
-                        onClick={() => {
-                          setActiveImage(index);
-                          setImageFailed(false);
-                        }}
+                        onClick={() => goToImage(index)}
                         aria-label={`Imagem ${index + 1}`}
                         aria-pressed={active ? "true" : "false"}
-                        className={
+                        className={`relative shrink-0 w-18 h-18 rounded-xl overflow-hidden bg-vr-surface-alt transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-vr-primary focus-visible:ring-offset-2 focus-visible:ring-offset-vr-surface ${
                           active
-                            ? "shrink-0 w-16 h-16 rounded-xl overflow-hidden ring-2 ring-vr-primary ring-offset-2 ring-offset-vr-surface"
-                            : "shrink-0 w-16 h-16 rounded-xl overflow-hidden border border-vr-border opacity-70 hover:opacity-100 hover:border-vr-primary/40 transition-all"
-                        }
+                            ? "border-2 border-vr-primary shadow-(--shadow-vr-sm)"
+                            : "border border-vr-border hover:border-vr-primary/50 hover:-translate-y-0.5"
+                        }`}
                       >
                         <img
                           src={src}
                           alt=""
-                          className="w-full h-full object-cover"
+                          className={`w-full h-full object-contain p-1.5 transition-opacity ${active ? "opacity-100" : "opacity-75"}`}
                           loading="lazy"
                         />
                       </button>
@@ -201,12 +237,12 @@ const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
               <div>
                 <h2
                   id={`detail-title-${product.id}`}
-                  className="m-0 text-[28px] leading-tight font-extrabold tracking-tight"
+                  className="m-0 text-2xl sm:text-[26px] leading-tight font-extrabold tracking-tight text-vr-text"
                 >
                   {product.title}
                 </h2>
                 <div className="mt-2 flex items-center gap-2 text-sm">
-                  <Stars value={product.rating} size={18} />
+                  <Stars value={product.rating} size={16} />
                   <span className="font-bold text-vr-text tabular-nums">
                     {product.rating.toFixed(1)}
                   </span>
@@ -293,7 +329,7 @@ const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
                   type="button"
                   onClick={handleAdd}
                   disabled={outOfStock}
-                  className="h-12 inline-flex items-center justify-center bg-vr-primary text-white border-0 rounded-xl font-bold transition-colors hover:bg-vr-primary-hover disabled:bg-vr-surface-alt disabled:text-vr-text-muted disabled:cursor-not-allowed shadow-(--shadow-vr-sm)"
+                  className="h-12 inline-flex items-center justify-center gap-2 bg-vr-primary text-white border-0 rounded-2xl font-bold transition-all hover:bg-vr-primary-hover hover:-translate-y-0.5 active:translate-y-0 disabled:bg-vr-surface-alt disabled:text-vr-text-muted disabled:cursor-not-allowed disabled:hover:translate-y-0 shadow-(--shadow-vr-sm) hover:shadow-(--shadow-vr-md)"
                   data-testid={`detail-add-${product.id}`}
                 >
                   {outOfStock ? "Indisponível" : "Adicionar ao carrinho"}
@@ -384,6 +420,29 @@ const InfoTile: React.FC<{
     </div>
   );
 };
+
+const ChevronIcon: React.FC<{ direction: "left" | "right"; size?: number }> = ({
+  direction,
+  size = 18,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    {direction === "left" ? (
+      <polyline points="15 18 9 12 15 6" />
+    ) : (
+      <polyline points="9 18 15 12 9 6" />
+    )}
+  </svg>
+);
 
 const SpecItem: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div className="flex flex-col gap-0.5">

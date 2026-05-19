@@ -1,4 +1,4 @@
-import React, { memo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   CartStepper,
   PRODUCT_THUMBNAIL_FALLBACK,
@@ -17,14 +17,38 @@ interface Props {
 }
 
 const LOW_STOCK_THRESHOLD = 10;
+const IMAGE_ROTATION_MS = 3500;
 
 function ProductCard({ product, onOpenDetails }: Props) {
   const quantityInCart = useCartStore(selectCartItemQuantity(product.id));
   const addItem = useCartStore((state) => state.addItem);
   const decrementItem = useCartStore((state) => state.decrementItem);
   const removeItem = useCartStore((state) => state.removeItem);
-  const imageRef = useRef<HTMLImageElement | null>(null);
+  const imageRefs = useRef<(HTMLImageElement | null)[]>([]);
   const [imageFailed, setImageFailed] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  const images = useMemo(() => {
+    const list = product.images?.filter(Boolean) ?? [];
+    if (list.length > 0) return list;
+    return [product.thumbnail || PRODUCT_THUMBNAIL_FALLBACK];
+  }, [product.images, product.thumbnail]);
+
+  useEffect(() => {
+    if (images.length <= 1 || paused || imageFailed) return;
+    const mq = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    if (mq?.matches) return;
+    const id = window.setInterval(() => {
+      setActiveImage((prev) => (prev + 1) % images.length);
+    }, IMAGE_ROTATION_MS);
+    return () => window.clearInterval(id);
+  }, [images.length, paused, imageFailed]);
+
+  useEffect(() => {
+    setActiveImage(0);
+    setImageFailed(false);
+  }, [product.id]);
 
   const hasDiscount = product.discountPercentage > 0;
   const discounted = hasDiscount
@@ -39,7 +63,7 @@ function ProductCard({ product, onOpenDetails }: Props) {
 
   const handleAdd = () => {
     if (outOfStock) return;
-    const image = imageRef.current;
+    const image = imageRefs.current[activeImage] ?? imageRefs.current[0];
     if (image) {
       flyToCart({
         imageUrl: image.currentSrc || image.src,
@@ -63,23 +87,46 @@ function ProductCard({ product, onOpenDetails }: Props) {
       <button
         type="button"
         onClick={openDetails}
-        className="relative aspect-square bg-vr-surface-alt grid place-items-center overflow-hidden cursor-pointer rounded-t-2xl outline-none focus-visible:ring-2 focus-visible:ring-vr-primary/60 focus-visible:ring-inset"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+        className="group relative aspect-square bg-vr-surface-alt grid place-items-center overflow-hidden cursor-pointer rounded-t-2xl outline-none focus-visible:ring-2 focus-visible:ring-vr-primary/60 focus-visible:ring-inset"
         aria-label={`Ver detalhes de ${product.title}`}
         data-testid={`open-details-${product.id}`}
       >
-        <img
-          ref={imageRef}
-          src={
-            imageFailed
-              ? PRODUCT_THUMBNAIL_FALLBACK
-              : product.thumbnail || PRODUCT_THUMBNAIL_FALLBACK
-          }
-          alt={product.title}
-          loading="lazy"
-          decoding="async"
-          onError={() => setImageFailed(true)}
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-        />
+        <div className="absolute inset-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]">
+          {images.map((src, index) => (
+            <img
+              key={`${src}-${index}`}
+              ref={(el) => {
+                imageRefs.current[index] = el;
+              }}
+              src={imageFailed ? PRODUCT_THUMBNAIL_FALLBACK : src}
+              alt={index === 0 ? product.title : ""}
+              aria-hidden={index === 0 ? undefined : "true"}
+              loading="lazy"
+              decoding="async"
+              onError={() => setImageFailed(true)}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-out ${index === activeImage ? "opacity-100" : "opacity-0"}`}
+            />
+          ))}
+        </div>
+        {images.length > 1 && (
+          <div
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5"
+            aria-hidden="true"
+          >
+            {images.map((src, index) => (
+              <span
+                key={`dot-${src}-${index}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  index === activeImage ? "w-4 bg-white" : "w-1.5 bg-white/60"
+                } shadow-(--shadow-vr-sm)`}
+              />
+            ))}
+          </div>
+        )}
         <div className="absolute top-2 left-2 flex flex-col gap-1.5 items-start">
           {hasDiscount && (
             <span
@@ -174,7 +221,7 @@ function ProductCard({ product, onOpenDetails }: Props) {
         ) : (
           <button
             type="button"
-            className="mt-2 h-11 inline-flex items-center justify-center bg-vr-primary text-white border-0 rounded-md font-bold transition-colors hover:bg-vr-primary-hover disabled:bg-vr-surface-alt disabled:text-vr-text-muted disabled:cursor-not-allowed"
+            className="mt-2 h-11 inline-flex items-center justify-center bg-vr-primary text-white border-0 rounded-xl font-bold shadow-(--shadow-vr-sm) transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-vr-primary-hover hover:shadow-(--shadow-vr-md) hover:-translate-y-0.75 active:translate-y-0 active:scale-[0.98] active:duration-100 disabled:bg-vr-surface-alt disabled:text-vr-text-muted disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0 disabled:hover:shadow-none disabled:hover:bg-vr-surface-alt"
             onClick={handleAdd}
             disabled={outOfStock}
             data-testid={`add-${product.id}`}
