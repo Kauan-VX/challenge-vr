@@ -9,7 +9,7 @@
   "scripts": {
     "start": "concurrently -k -n header,footer,cards,shell -c yellow,magenta,cyan,green \"npm:start -w @vr/header\" \"npm:start -w @vr/footer\" \"npm:start -w @vr/cards\" \"npm:start -w @vr/shell\"",
     "build": "npm run build -w @vr/shared && npm run build -w @vr/header && npm run build -w @vr/footer && npm run build -w @vr/cards && npm run build -w @vr/shell",
-    "vercel-build": "npm run build && npm run build-storybook && node scripts/combine-dist.js",
+    "build:static": "npm run build && npm run build-storybook && node scripts/combine-dist.js",
     "test": "jest --projects packages/shared packages/shell packages/header packages/footer packages/cards",
     "test:watch": "jest --projects packages/shared packages/shell packages/header packages/footer packages/cards --watch",
     "test:coverage": "jest --projects packages/shared packages/shell packages/header packages/footer packages/cards --coverage",

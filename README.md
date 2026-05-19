@@ -13,7 +13,7 @@ npm start            # sobe os 4 dev servers
 
 App em `http://localhost:3000`. Cada remote também sobe standalone em 3001/3002/3003 pra desenvolvimento isolado. Se a 3000 estiver ocupada o shell pula pra próxima livre (e avisa no log).
 
-Outros scripts úteis: `npm test`, `npm run lint`, `npm run storybook`. Build de produção: `npm run build` (gera os 4 `dist/` independentes) ou `npm run vercel-build` (mesma coisa + Storybook + junta tudo em `out/` pra hospedagem estática).
+Outros scripts úteis: `npm test`, `npm run lint`, `npm run storybook`. Build de produção: `npm run build` (gera os 4 `dist/` independentes) ou `npm run build:static` (mesma coisa + Storybook + junta tudo em `out/` pra hospedagem estática).
 
 ## Estrutura
 
@@ -44,9 +44,9 @@ Storybook cobre os componentes principais isolados — `npm run storybook` (port
 
 ## Build de produção
 
-`npm run build` gera o `dist/` de cada package independente. `npm run vercel-build` empilha tudo (incluindo o Storybook) em `out/` pra hospedagem estática — o shell resolve os remotes por path relativo (`header@/header/remoteEntry.js`) e `publicPath: "auto"` cuida do resto. Em dev, o shell aponta pra URL absoluta (`http://localhost:3001/...`).
+`npm run build` gera o `dist/` de cada package independente. `npm run build:static` empilha tudo (incluindo o Storybook) em `out/` pra hospedagem estática — o shell resolve os remotes por path relativo (`header@/header/remoteEntry.js`) e `publicPath: "auto"` cuida do resto. Em dev, o shell aponta pra URL absoluta (`http://localhost:3001/...`).
 
-Pra testar o bundle de produção localmente: `npm run vercel-build && npx serve out`.
+Pra testar o bundle de produção localmente: `npm run build:static && npx serve out`.
 
 ## Notas
 
