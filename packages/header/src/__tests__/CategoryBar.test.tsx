@@ -1,31 +1,30 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useFiltersStore } from "@vr/shared";
 import CategoryBar from "../components/CategoryBar";
-import { AppProviders, httpGet, stubCategories } from "./testUtils";
+import { AppProviders, clientWithCategories } from "./testUtils";
+
+const CATEGORIES = [
+  { slug: "beauty", name: "Beauty" },
+  { slug: "fragrances", name: "Fragrances" },
+  { slug: "laptops", name: "Laptops" },
+];
 
 beforeEach(() => {
   useFiltersStore.setState({ search: "", category: null });
-  httpGet.mockReset();
-  stubCategories([
-    { slug: "beauty", name: "Beauty" },
-    { slug: "fragrances", name: "Fragrances" },
-    { slug: "laptops", name: "Laptops" },
-  ]);
 });
 
 const renderBar = () =>
   render(
-    <AppProviders>
+    <AppProviders client={clientWithCategories(CATEGORIES)}>
       <CategoryBar />
     </AppProviders>,
   );
 
 describe("CategoryBar", () => {
-  it("renderiza categorias traduzidas em pt-BR", async () => {
+  it("renderiza categorias traduzidas em pt-BR", () => {
     renderBar();
-    await waitFor(() => expect(screen.getByTestId("category-beauty")).toBeInTheDocument());
     expect(screen.getByTestId("category-beauty")).toHaveTextContent("Beleza");
     expect(screen.getByTestId("category-fragrances")).toHaveTextContent("Perfumes");
     expect(screen.getByTestId("category-laptops")).toHaveTextContent("Notebooks");
@@ -34,7 +33,6 @@ describe("CategoryBar", () => {
   it("clicar em categoria atualiza filtersStore", async () => {
     const user = userEvent.setup();
     renderBar();
-    await waitFor(() => expect(screen.getByTestId("category-beauty")).toBeInTheDocument());
     await user.click(screen.getByTestId("category-beauty"));
     expect(useFiltersStore.getState().category).toBe("beauty");
   });
@@ -43,7 +41,6 @@ describe("CategoryBar", () => {
     useFiltersStore.setState({ search: "", category: "beauty" });
     const user = userEvent.setup();
     renderBar();
-    await waitFor(() => expect(screen.getByTestId("category-all")).toBeInTheDocument());
     await user.click(screen.getByTestId("category-all"));
     expect(useFiltersStore.getState().category).toBeNull();
   });
@@ -52,7 +49,6 @@ describe("CategoryBar", () => {
     useFiltersStore.setState({ search: "", category: "beauty" });
     const user = userEvent.setup();
     renderBar();
-    await waitFor(() => expect(screen.getByTestId("category-beauty")).toBeInTheDocument());
     await user.click(screen.getByTestId("category-beauty"));
     expect(useFiltersStore.getState().category).toBeNull();
   });

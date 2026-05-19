@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { useCartStore, useFiltersStore } from "@vr/shared";
 import type { Product } from "@vr/shared";
 import Header from "../Header";
-import { AppProviders, httpGet, httpPost, stubCategories } from "./testUtils";
+import { AppProviders, clientWithCategories, httpGet, httpPost, stubCategories } from "./testUtils";
 
 const sample = (id: number, title: string, price = 10): Product => ({
   id,
@@ -35,7 +35,7 @@ const setup = () => {
   store.addItem(sample(2, "Mochila", 89.5));
   store.openCart();
   const utils = render(
-    <AppProviders>
+    <AppProviders client={clientWithCategories([{ slug: "beauty", name: "Beauty" }])}>
       <Header />
     </AppProviders>,
   );

@@ -29,3 +29,14 @@ export function stubCategories(slugs: Array<{ slug: string; name: string }> = []
     return { data: [] } as never;
   });
 }
+
+// Pre-popula a cache do React Query com categorias pra que `useCategories` retorne
+// sincrono e nao gere updates fora do act() ao resolver a promise da request.
+export function clientWithCategories(slugs: Array<{ slug: string; name: string }> = []) {
+  const client = makeQueryClient();
+  client.setQueryData(
+    ["categories"],
+    slugs.map((s) => ({ ...s, url: "" })),
+  );
+  return client;
+}

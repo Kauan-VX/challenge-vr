@@ -1,27 +1,40 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useFiltersStore, SearchIcon, CloseIcon } from "@vr/shared";
 
 const HeaderSearch: React.FC = () => {
   const storedSearch = useFiltersStore((s) => s.search);
   const setSearch = useFiltersStore((s) => s.setSearch);
   const [value, setValue] = useState(storedSearch);
+  // ref evita re-entry entre os dois effects abaixo: o debounce escreve no
+  // store -> storedSearch muda -> effect de sync poderia chamar setValue de
+  // novo. Marcando o que nos mesmos escrevemos, o sync ignora.
+  const lastWrittenRef = useRef(storedSearch);
 
   useEffect(() => {
+    if (storedSearch === lastWrittenRef.current) return;
+    lastWrittenRef.current = storedSearch;
     setValue(storedSearch);
   }, [storedSearch]);
 
   // 300ms: rápido o bastante pra parecer responsivo,
   // longo o bastante pra não disparar request a cada tecla
   useEffect(() => {
+    if (value === storedSearch) return;
     const id = setTimeout(() => {
-      if (value !== storedSearch) setSearch(value);
+      lastWrittenRef.current = value;
+      setSearch(value);
     }, 300);
     return () => clearTimeout(id);
   }, [value, storedSearch, setSearch]);
 
+  const commit = (next: string) => {
+    lastWrittenRef.current = next;
+    setSearch(next);
+  };
+
   const handleClear = () => {
     setValue("");
-    setSearch("");
+    commit("");
   };
 
   return (
@@ -30,7 +43,7 @@ const HeaderSearch: React.FC = () => {
       className="flex-1 min-w-0"
       onSubmit={(e) => {
         e.preventDefault();
-        setSearch(value);
+        commit(value);
       }}
     >
       <div className="relative">
