@@ -2,8 +2,6 @@
 
 Teste técnico — micro frontends com Module Federation consumindo a [DummyJSON](https://dummyjson.com). Shell + 3 remotes (Header, Footer, Cards).
 
-Deploy ao vivo: **https://challenge-vr.vercel.app/** — Storybook em **https://challenge-vr.vercel.app/storybook/**.
-
 ## Rodando
 
 Requer Node 20.19+ (LTS) ou 22.13+ — restrição vinda de `jsdom@26` / `jest@30`. Testado em Node 22.
@@ -15,7 +13,7 @@ npm start            # sobe os 4 dev servers
 
 App em `http://localhost:3000`. Cada remote também sobe standalone em 3001/3002/3003 pra desenvolvimento isolado. Se a 3000 estiver ocupada o shell pula pra próxima livre (e avisa no log).
 
-Outros scripts úteis: `npm test`, `npm run lint`, `npm run storybook`. Build de produção: `npm run build` (ou `npm run vercel-build` que junta tudo em `out/`).
+Outros scripts úteis: `npm test`, `npm run lint`, `npm run storybook`. Build de produção: `npm run build` (gera os 4 `dist/` independentes) ou `npm run vercel-build` (mesma coisa + Storybook + junta tudo em `out/` pra hospedagem estática).
 
 ## Estrutura
 
@@ -42,15 +40,13 @@ packages/
 
 Jest + Testing Library + `jest-environment-jsdom`, configurado via `jest --projects` (cada package roda os próprios). 67 testes cobrindo store, API client, hooks, componentes e o fluxo end-to-end do carrinho. Mocks via `jest.spyOn(http, "get")` em vez de `global.fetch`.
 
-Storybook cobre os componentes principais isolados ([challenge-vr.vercel.app/storybook/](https://challenge-vr.vercel.app/storybook/)). Stories setam o estado do store via `parameters.cart` / `parameters.filters` (decorator em [.storybook/preview.tsx](.storybook/preview.tsx)) e stubam o fetch por padrão.
+Storybook cobre os componentes principais isolados — `npm run storybook` (porta 6006). Stories setam o estado do store via `parameters.cart` / `parameters.filters` (decorator em [.storybook/preview.tsx](.storybook/preview.tsx)) e stubam o fetch por padrão.
 
-## Deploy
+## Build de produção
 
-`vercel.json` + `vercel-build` montam os 4 `dist/` em um único `out/`. Em produção o shell resolve os remotes por path relativo (`header@/header/remoteEntry.js`); em dev por URL absoluta (`http://localhost:3001/...`). `publicPath: "auto"` faz o resto.
+`npm run build` gera o `dist/` de cada package independente. `npm run vercel-build` empilha tudo (incluindo o Storybook) em `out/` pra hospedagem estática — o shell resolve os remotes por path relativo (`header@/header/remoteEntry.js`) e `publicPath: "auto"` cuida do resto. Em dev, o shell aponta pra URL absoluta (`http://localhost:3001/...`).
 
-Os 3 `remoteEntry.js` saem com `Cache-Control: no-store` ([vercel.json](vercel.json)). Tentei `must-revalidate` antes, mas a edge da Vercel segurava versão antiga e o pessoal pegava header/footer/cards desatualizados depois de deploy. `no-store` custa um round trip extra por load, mas pros entries do Module Federation vale a pena — os chunks com hash continuam cacheados eternamente normal.
-
-Pra testar localmente: `npm run vercel-build && npx serve out`.
+Pra testar o bundle de produção localmente: `npm run vercel-build && npx serve out`.
 
 ## Notas
 
