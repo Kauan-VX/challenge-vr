@@ -8,6 +8,15 @@ const config: StorybookConfig = {
     "@storybook/addon-a11y",
     "@storybook/addon-webpack5-compiler-swc",
   ],
+  swc: () => ({
+    jsc: {
+      transform: {
+        react: {
+          runtime: "automatic",
+        },
+      },
+    },
+  }),
   framework: {
     name: "@storybook/react-webpack5",
     options: {},
