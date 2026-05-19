@@ -6,6 +6,8 @@ Deploy ao vivo: **https://challenge-vr.vercel.app/** — Storybook em **https://
 
 ## Rodando
 
+Requer Node 20.19+ (LTS) ou 22.13+ — restrição vinda de `jsdom@26` / `jest@30`. Testado em Node 22.
+
 ```bash
 npm install
 npm start            # sobe os 4 dev servers

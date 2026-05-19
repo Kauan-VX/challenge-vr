@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import AppErrorBoundary from "../components/AppErrorBoundary";
+import AppErrorBoundary, * as AppErrorBoundaryModule from "../components/AppErrorBoundary";
 import { setTelemetrySink } from "@vr/shared";
 
 const Boom: React.FC = () => {
@@ -52,19 +52,14 @@ describe("AppErrorBoundary", () => {
   });
 
   it("botao recarregar dispara window.location.reload", () => {
-    const reload = jest.fn();
-    const original = window.location;
-    Object.defineProperty(window, "location", {
-      configurable: true,
-      value: { ...original, reload },
-    });
+    const reloadSpy = jest.spyOn(AppErrorBoundaryModule, "reloadPage").mockImplementation(() => {});
     render(
       <AppErrorBoundary>
         <Boom />
       </AppErrorBoundary>,
     );
     fireEvent.click(screen.getByRole("button", { name: /recarregar/i }));
-    expect(reload).toHaveBeenCalled();
-    Object.defineProperty(window, "location", { configurable: true, value: original });
+    expect(reloadSpy).toHaveBeenCalled();
+    reloadSpy.mockRestore();
   });
 });

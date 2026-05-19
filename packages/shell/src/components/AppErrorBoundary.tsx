@@ -9,6 +9,10 @@ interface State {
   hasError: boolean;
 }
 
+export const reloadPage = (): void => {
+  window.location.reload();
+};
+
 class AppErrorBoundary extends React.Component<Props, State> {
   state: State = { hasError: false };
 
@@ -24,7 +28,7 @@ class AppErrorBoundary extends React.Component<Props, State> {
   }
 
   private handleReload = () => {
-    window.location.reload();
+    reloadPage();
   };
 
   render() {
